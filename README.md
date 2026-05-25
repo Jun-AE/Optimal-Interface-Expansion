@@ -2,14 +2,14 @@
 
 Companion code for the paper:
 
-> **M. J. Ali, M., Safdar, M., Saeed, Z., Jamil, A., Mutee Ur Rehman, H.M., Umer, M. (2026).**
+> **Muhammad Junaid Ali, Muhammad Safdar, Zeeshan Saeed, Abdullah Jamil, Hafiz Mohammad Mutee Ur Rehman and Muhammad Umer (2026).**
 > *Enhancing structural coupling: A frequency-based methodology for optimal interface expansion.*
 > Journal of Sound and Vibration 635 (2026) 119782.
-> [DOI: ](https://doi.org/10.1016/j.jsv.2026.119782)
+> [DOI](https://doi.org/10.1016/j.jsv.2026.119782)
 
 The methodology combines **System Equivalent Model Mixing (SEMM)** for FRF expansion with an **Optimal Sensor Placement (OSP)** framework driven by the **Global Coherence Correlation Metric (GCCM, Γ)**. Optimisation is performed by exhaustive search where feasible and by the **Mountain Gazelle Optimizer (MGO)** for larger spaces.
 
-The repository implements the **beam case study (Case 1)** end-to-end.
+The repository implements the **beam case study (Case 1)** end-to-end (for now).
 
 ---
 
