@@ -1,0 +1,26 @@
+# MATLAB auto-save / compiled / output artefacts
+*.asv
+*.m~
+*.mex*
+*.mlapp
+slprj/
+*.slxc
+codegen/
+
+# Generated outputs
+*.mp4
+*.avi
+*.pdf
+*.png
+*.jpg
+*.jpeg
+*.fig
+
+# MATLAB workspace dumps
+*.mat
+
+# Editor / OS
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
