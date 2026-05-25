@@ -1,8 +1,8 @@
-# Beam SEMM + Optimal Sensor Placement — MATLAB code
+# Optimal Interface Expansion
 
 Companion code for the paper:
 
-> **Junaid Ali, M., Safdar, M., Saeed, Z., Jamil, A., Mutee Ur Rehman, H.M., Umer, M. (2026).**
+> **M. J. Ali, M., Safdar, M., Saeed, Z., Jamil, A., Mutee Ur Rehman, H.M., Umer, M. (2026).**
 > *Enhancing structural coupling: A frequency-based methodology for optimal interface expansion.*
 > Journal of Sound and Vibration 635 (2026) 119782.
 > [DOI: ](https://doi.org/10.1016/j.jsv.2026.119782)
