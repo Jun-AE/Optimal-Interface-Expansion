@@ -54,21 +54,22 @@ beam_coh_main.m
     └── objective_function         GCCM fitness for MGO
 ```
 
-Plotting uses the **magma** and **cividis** colormaps from `utils/cmap_magma.m` and `utils/cmap_cividis.m`. They are self-contained and require no Image Processing or Bioinformatics toolboxes.
+Plotting uses the **magma** and **cividis** colormaps from `utils/cmap_magma.m` and `utils/cmap_cividis.m`. They are self-contained and require no native toolboxes.
+Note: The colormaps are different from the published article. I changed them purely out of my love for them. :)
 
 ---
 
 ## Requirements
 
 - MATLAB R2025b
-- Signal Processing Toolbox (`findpeaks`, `modalfit`)
-- Parallel Computing Toolbox (`parfor`, `pagemtimes`, `pagemldivide`) — recommended for the bruteforce search
+- Parallel Computing Toolbox (`parfor`, `pagemtimes`, `pagemldivide`) — recommended for more efficient computation
 
 ---
 
 ## Status
 
-This is a working but evolving research codebase. Refinements and additional case studies (square plate, L-plate) will follow.
+The current state of the code is limited to the beam-case only. Future additions will include the square plate case.
+A supplementary MAPDL script will also be provided with a tutorial (hopefully) on how to get Craig-Bampton reduced models from Ansys Mechanical (GUI method only) 
 
 ---
 
