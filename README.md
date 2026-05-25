@@ -4,8 +4,8 @@ Companion code for the paper:
 
 > **Junaid Ali, M., Safdar, M., Saeed, Z., Jamil, A., Mutee Ur Rehman, H.M., Umer, M. (2026).**
 > *Enhancing structural coupling: A frequency-based methodology for optimal interface expansion.*
-> Journal of Sound and Vibration **635**, 119782.
-> DOI: [10.1016/j.jsv.2026.001458](https://doi.org/10.1016/j.jsv.2026.001458)
+> Journal of Sound and Vibration 635 (2026) 119782.
+> [DOI: ](https://doi.org/10.1016/j.jsv.2026.119782)
 
 The methodology combines **System Equivalent Model Mixing (SEMM)** for FRF expansion with an **Optimal Sensor Placement (OSP)** framework driven by the **Global Coherence Correlation Metric (GCCM, Γ)**. Optimisation is performed by exhaustive search where feasible and by the **Mountain Gazelle Optimizer (MGO)** for larger spaces.
 
@@ -15,7 +15,7 @@ The repository implements the **beam case study (Case 1)** end-to-end.
 
 ## Quick start
 
-1. Open MATLAB R2025b (older versions may work but are untested).
+1. Open MATLAB R2025b (tested older versions include 2024b only).
 2. From this folder, add `utils/` to the path:
    ```matlab
    addpath('utils')
@@ -75,16 +75,17 @@ A supplementary MAPDL script will also be provided with a tutorial (hopefully) o
 
 ## Citation
 
-If you use this code, please cite the paper:
+If you use this code, kindly cite the paper as follows.
 
-```bibtex
-@article{ali2026enhancing,
-  title   = {Enhancing structural coupling: A frequency-based methodology for optimal interface expansion},
-  author  = {Junaid Ali, Muhammad and Safdar, Muhammad and Saeed, Zeeshan and Jamil, Abdullah and Mutee Ur Rehman, Hafiz Mohammad and Umer, Muhammad},
-  journal = {Journal of Sound and Vibration},
-  volume  = {635},
-  pages   = {119782},
-  year    = {2026},
-  doi     = {10.1016/j.jsv.2026.001458}
-}
+```@article{ALI2026119782,
+title = {Enhancing structural coupling: A frequency-based methodology for optimal interface expansion},
+journal = {Journal of Sound and Vibration},
+volume = {635},
+pages = {119782},
+year = {2026},
+issn = {0022-460X},
+doi = {https://doi.org/10.1016/j.jsv.2026.119782},
+url = {https://www.sciencedirect.com/science/article/pii/S0022460X26001458},
+author = {Muhammad Junaid Ali and Muhammad Safdar and Zeeshan Saeed and Abdullah Jamil and Hafiz Mohammad {Mutee Ur Rehman} and Muhammad Umer},
+keywords = {Dynamic substructuring, Optimal sensor placement, Interface dynamics, Frequency response functions, System equivalent model mixing},
 ```
