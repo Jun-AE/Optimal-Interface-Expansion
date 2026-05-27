@@ -73,6 +73,12 @@ A supplementary MAPDL script will also be provided with a tutorial (hopefully) o
 
 ---
 
+## Licence
+
+Released under the [MIT License](LICENSE) — free to use, modify, and redistribute. Citation is appreciated but not legally required (see below).
+
+---
+
 ## Citation
 
 If you use this code, kindly cite the paper as follows.
