@@ -30,7 +30,7 @@ function out = bruteforce_search_beam(interface_dofs, num_sensors, y_n, y_e, opt
 %     .ys                 SEMM-expanded FRF at the best configuration
 %
 %   Reference:
-%     Junaid et al. (2026), Journal of Sound and Vibration.
+%     Junaid et al. (2026), Journal of Sound and Vibration, https://doi.org/10.1016/j.jsv.2026.119782.
 
 cand_dofs    = setdiff(1:size(y_n, 1), interface_dofs);
 y_e_sub      = y_e(interface_dofs, interface_dofs, :);
@@ -44,7 +44,7 @@ switch upper(opts.search_type)
         cor = run_dp(sensor_combs, y_n, y_e, opts, correlation_metric);
         [best_row, best_col] = pick_best(cor, opts.extrema);
         best_sensors      = sensor_combs(best_row, :);
-        best_excitations  = best_sensors;
+        best_excitations  = best_sensors; % sensors and excitations are the same
     case 'NDP'
         exc_combs_per_row = ndp_excitations(sensor_combs, cand_dofs, opts.ec);
         cor = run_outer_inner(sensor_combs, exc_combs_per_row, y_n, y_e, opts, correlation_metric);
@@ -60,7 +60,7 @@ switch upper(opts.search_type)
         best_excitations  = exc_combs_all(best_col, :);
     otherwise
         error('bruteforce_search_beam:UnknownSearchType', ...
-              'opts.search_type must be ''DP'', ''NDP'' or ''Both''.');
+              'opts.search_type must be ''DP'', ''NDP'' or ''BOTH''.');
 end
 
 ys_best = semm(best_sensors, best_excitations, y_n, y_e, ...
