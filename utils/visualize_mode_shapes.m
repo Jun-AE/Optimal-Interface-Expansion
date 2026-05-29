@@ -1,8 +1,5 @@
 function visualize_mode_shapes(NodeCoords, modeShapes, natFreq, varargin)
-% VISUALIZE_MODE_SHAPES  Visualise (and optionally animate) mode shapes on a 1D or 2D-regular grid.
-%
-%   VISUALIZE_MODE_SHAPES(NODECOORDS, MODESHAPES, NATFREQ) shows a static
-%   side-by-side panel of all mode shapes.
+%  Visualise (and optionally animate) mode shapes on a 1D or 2D-regular grid.
 %
 %   VISUALIZE_MODE_SHAPES(..., NAME, VALUE, ...) accepts:
 %     'Animate'      - (logical) Animate the sinusoidal motion. Default false.
@@ -30,8 +27,6 @@ function visualize_mode_shapes(NodeCoords, modeShapes, natFreq, varargin)
 %     - If all y-coordinates are equal (or all x), the layout is treated as 1D.
 %     - If numel(unique x) * numel(unique y) == n, the layout is a regular
 %       2D rectangular grid.
-%     - Other layouts are not supported by this version (the irregular-grid
-%       branch from the original implementation has been removed).
 %
 %   Example:
 %     % Static figure
@@ -40,10 +35,6 @@ function visualize_mode_shapes(NodeCoords, modeShapes, natFreq, varargin)
 %     % Animated + saved to MP4
 %     visualize_mode_shapes(NodeCoords, Phi, fn, ...
 %         'Animate', true, 'SaveVideo', true, 'VideoFile', 'beam.mp4');
-%
-%   Reference:
-%     Junaid et al. (2026). Journal of Sound and Vibration.
-%     DOI: 10.1016/j.jsv.2026.001458
 %
 %   See also: cmap_cividis, calculate_mac, plot_mode_shape.
 
@@ -65,7 +56,7 @@ y_coords = uniquetol(NodeCoords_sorted(:, 2), tol, 'DataScale', 1);
 
 layout = detectLayout(NodeCoords_sorted, x_coords, y_coords);
 
-%% Draw — dispatch on layout
+%% Draw  dispatch on layout
 
 [fig, plotHandles, modeData] = setUpFigure(numModes, opts);
 
@@ -105,7 +96,7 @@ if isempty(opts.Loop), opts.Loop = ~opts.SaveVideo; end % loop live, single-pass
 end
 
 % =========================================================================
-% Layout detection — 1D, 2D-regular, or unsupported
+% Layout detection  1D, 2D-regular, or unsupported
 % =========================================================================
 function layout = detectLayout(NodeCoords_sorted, x_coords, y_coords)
 
@@ -137,10 +128,6 @@ function [fig, h, modeData] = setUpFigure(numModes, opts)
 
 fig = figure('Name', 'Mode Shape Visualisation', 'Color', 'white');
 if opts.SaveVideo
-    % Choose a window size that comfortably fits the screen. VideoWriter
-    % demands all frames be byte-identical in size; if MATLAB clamps the
-    % requested figure to fit the screen, the captured frame width and
-    % height drift between iterations and writeVideo errors out.
     screen = get(groot, 'ScreenSize');                 % [l b w h]
     figW   = min(1280, screen(3) - 100);
     figH   = min( 720, screen(4) - 150);
@@ -268,8 +255,6 @@ end
 % Shared cosmetic helpers
 % =========================================================================
 function addSharedColorbar(h)
-% Force a uniform colour limit on every tile, then attach one shared
-% colorbar to the east edge of the tiledlayout via Layout.Tile.
 for i = 1:numel(h.ax)
     if isgraphics(h.ax(i))
         clim(h.ax(i), [-1, 1]);
@@ -290,9 +275,6 @@ end
 % =========================================================================
 function runAnimation(fig, h, ~, natFreq, layout, opts)
 
-% One full pass is NumFrames frames; phase wraps every 2*pi so a "cycle"
-% is when the slowest mode completes one oscillation. timeScale normalises
-% so the fastest mode runs at a comfortable visual rate.
 timeScale = 1 / max(natFreq);
 T_total   = opts.NumFrames / opts.FrameRate;
 t_anim    = linspace(0, T_total, opts.NumFrames);
@@ -305,16 +287,11 @@ if opts.SaveVideo
     open(v);
 end
 
-% Let the layout settle before any frame is captured — otherwise the very
-% first frame can be a transient that defines an "expected size" different
-% from every subsequent frame.
 drawnow;  pause(0.1);
 
 targetSize = [];                       % set when the first frame is captured
 numModes   = numel(h.ax);
 
-% Single-pass loop; wrapped in `while isvalid(fig)` when Loop is enabled
-% so live playback repeats until the user closes the figure.
 keepLooping = true;
 while keepLooping
     for k = 1:opts.NumFrames
@@ -359,8 +336,7 @@ if opts.SaveVideo, close(v); end
 end
 
 % =========================================================================
-% Defensive frame-size enforcement: crop or white-pad to match `target`.
-% Belt-and-braces against any residual one-pixel drift in getframe output.
+% Defensive frame-size enforcement
 % =========================================================================
 function img = forceFrameSize(img, target)
 [hImg, wImg, c] = size(img);
