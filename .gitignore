@@ -24,3 +24,7 @@ codegen/
 Thumbs.db
 .vscode/
 .idea/
+
+# Local-only dev artefacts (not published)
+BEAM_MAIN_TEST.m
+PLAN.md
