@@ -1,24 +1,7 @@
 function map = cmap_magma(N)
-% CMAP_MAGMA  Perceptually-uniform magma colormap (matplotlib origin).
+% CMAP_MAGMA  Perceptually-uniform magma colormap.
 %
-%   MAP = CMAP_MAGMA(N) returns an N×3 RGB colormap closely approximating
-%   matplotlib's magma — a perceptually-uniform sequential map running from
-%   near-black through deep purple and red to bright yellow.
-%
-%   CMAP_MAGMA with no argument returns a 256×3 map.
-%
-%   Implementation: shape-preserving (pchip) interpolation through 13 RGB
-%   control points sampled from the matplotlib magma table. Output is
-%   clamped to [0, 1]. Visually indistinguishable from the original at
-%   typical figure resolutions.
-%
-%   Example:
-%     colormap(cmap_magma);          % use as default 256-step colormap
-%     C = cmap_magma(5);             % five discrete magma colours
-%
-%   Reference:
-%     Smith, N. & van der Walt, S. (2015). matplotlib magma colormap.
-%     BSD-licensed; reimplemented here as a compact approximation.
+%   MAP = CMAP_MAGMA(N) returns an N×3 RGB colormap
 %
 %   See also: cmap_cividis, colormap, interp1.
 
