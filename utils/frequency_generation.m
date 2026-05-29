@@ -1,7 +1,7 @@
 function [frequency_range_rad, frequency_range_Hz] = frequency_generation(freqstart, freqend, stepsize)
-% FREQUENCY_GENERATION  Build a uniform frequency axis in Hz and rad/s.
+% frequency_generation Build a uniform frequency axis in Hz and rad/s.
 %
-%   [W, F] = FREQUENCY_GENERATION(FREQSTART, FREQEND, STEPSIZE) returns a
+%   [W, F] = frequency_generation(freqstart, freqend, stepsize) returns a
 %   uniform frequency axis F = FREQSTART:STEPSIZE:FREQEND (in Hz) and its
 %   angular counterpart W = 2*pi*F (in rad/s).
 %
