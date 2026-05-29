@@ -1,48 +1,39 @@
 function E = analyze_frf_energy(Y, freq_Hz, topN, nModes, plotFlag, dB_floor)
-% ANALYZE_FRF_ENERGY  Sensor / excitation / modal energy diagnostics on an FRF.
+% analyze_frf_energy  Sensor / excitation / modal energy diagnostics on an FRF.
 %
-%   E = ANALYZE_FRF_ENERGY(Y, FREQ_HZ, TOPN, NMODES) computes per-sensor and
-%   per-excitation FRF energy, identifies the TOPN highest-energy DoFs of
-%   each, detects NMODES modal peaks from the frequency-averaged energy
-%   profile, and lists the TOPN DoFs that participate most strongly in each
-%   mode. A single diagnostic figure is produced (dB-scaled imagesc of the
-%   row-wise energy density with overlaid top-DoF markers, plus a bar chart
-%   of the per-DoF energy split).
+%   E = analyze_frf_energy(Y, freq_Hz, topN, nModes) computes per-sensor and
+%   per-excitation FRF energy/contribution.
 %
-%   E = ANALYZE_FRF_ENERGY(Y, FREQ_HZ, TOPN, NMODES, PLOTFLAG) suppresses the
-%   diagnostic figure when PLOTFLAG is false (default true).
+%   E = analyze_frf_energy(Y, freq_Hz, topN, nModes, plotFlag) suppresses the
+%   diagnostic figure when plotFlag is false (default true).
 %
-%   E = ANALYZE_FRF_ENERGY(Y, FREQ_HZ, TOPN, NMODES, PLOTFLAG, DB_FLOOR) sets
+%   E = analyze_frf_energy(Y, freq_Hz, topN, nModes, plotFlag, dB_floor) sets
 %   the lower clipping limit (in dB relative to the peak) for the heatmap.
 %   Default: -60 dB. Lower values reveal more low-amplitude structure;
 %   higher values (e.g. -30) emphasise only the strong modal ridges.
 %
 %   Inputs:
 %     Y         - (complex, n×n×nFreq) FRF matrix [sensor × excitation × freq].
-%     FREQ_HZ   - (double, 1×nFreq) [Hz] Frequency axis matching dim 3 of Y.
-%     TOPN      - (integer, scalar) Number of top sensors / excitations / per-mode
+%     freq_Hz   - (double, 1×nFreq) [Hz] Frequency axis matching dim 3 of Y.
+%     topN      - (integer, scalar) Number of top sensors / excitations / per-mode
 %                 DoFs to report. Pass 0 to skip top-DoF selection.
-%     NMODES    - (integer, scalar) Number of modal peaks to detect.
-%     PLOTFLAG  - (logical) [optional] Show the diagnostic figure. Default: true.
-%     DB_FLOOR  - (double, scalar) [optional] Lower clim of the dB heatmap.
+%     nModes    - (integer, scalar) Number of modal peaks to detect.
+%     plotFlag  - (logical) [optional] Show the diagnostic figure. Default: true.
+%     dB_Floor  - (double, scalar) [optional] Lower clim of the dB heatmap.
 %                 Default: -60 (dB rel. peak).
 %
 %   Output struct E with fields:
 %     .sensor_energy     - (n×1) sum_{j,k} |Y(i,j,k)|^2          (per-sensor)
 %     .excitation_energy - (n×1) sum_{i,k} |Y(i,j,k)|^2          (per-excitation)
-%     .top_sensors       - (TOPN×1) indices of highest-energy sensors.
-%     .top_excitations   - (TOPN×1) indices of highest-energy excitations.
+%     .top_sensors       - (topN×1) indices of highest-energy sensors.
+%     .top_excitations   - (topN×1) indices of highest-energy excitations.
 %     .lambda_rows       - (n×nFreq) sqrt(sum_j |Y(i,j,k)|^2)    (row-wise energy density)
 %     .lambda_cols       - (n×nFreq) sqrt(sum_i |Y(i,j,k)|^2)    (col-wise energy density)
-%     .mode_freqs        - (NMODES×1) [Hz] frequencies of detected modal peaks.
-%     .mode_dofs         - (TOPN×NMODES) top DoFs for each detected mode.
+%     .mode_freqs        - (nModes×1) [Hz] frequencies of detected modal peaks.
+%     .mode_dofs         - (topN×nModes) top DoFs for each detected mode.
 %     .common_dofs       - (variable) DoFs appearing in every mode's top-N list.
 %
 %   Notes:
-%     This function consolidates three earlier helpers (compute_energy_importance,
-%     SensorEnergy, getTopModalDoFs) that each recomputed the same row-wise
-%     energy density and produced separate figures. All energy sums are
-%     vectorised via sum(abs(Y).^2, [dim_list]) — no per-frequency loops.
 %
 %     Modal peak detection uses findpeaks (Signal Processing Toolbox) on the
 %     mean of lambda_rows across sensors; peaks are returned in ascending
@@ -54,7 +45,7 @@ function E = analyze_frf_energy(Y, freq_Hz, topN, nModes, plotFlag, dB_floor)
 %
 %   Reference:
 %     Junaid et al. (2026). Journal of Sound and Vibration.
-%     DOI: 10.1016/j.jsv.2026.001458
+%     DOI: https://doi.org/10.1016/j.jsv.2026.119782
 %
 %   See also: findpeaks, cmap_cividis, cmap_magma, plot_beam.
 
@@ -115,7 +106,7 @@ end
 %% Diagnostic figure
 
 if plotFlag
-    drawEnergyFigure(E, freq_Hz, topN, nModes, dB_floor);
+    draw_figure(E, freq_Hz, topN, nModes, dB_floor);
 end
 
 end
@@ -123,7 +114,7 @@ end
 % =========================================================================
 % Local helper: combined diagnostic figure (heatmap + bar chart)
 % =========================================================================
-function drawEnergyFigure(E, freq_Hz, topN, nModes, dB_floor)
+function draw_figure(E, freq_Hz, topN, nModes, dB_floor)
 
 fig = figure('Position', [200 150 1100 750]);
 tlo = tiledlayout(fig, 2, 1, 'Padding', 'compact', 'TileSpacing', 'compact');
