@@ -1,24 +1,25 @@
 % MAIN  Optimal interface expansion — worked examples.
 %
-%   Two self-contained, clearly separated examples for the methodology in:
+%   Two self-contained, end-to-end examples for the methodology in:
 %     Junaid et al. (2026). Journal of Sound and Vibration. DOI: 10.1016/j.jsv.2026.119782
 %
+%   Each example: build the model -> FRFs (+ noise) -> find the optimal
+%   sensor/excitation DoFs by BOTH exhaustive search and the Mountain Gazelle
+%   Optimizer (mgo) on the same NDP space -> compare the two searches.
+%
 %   EXAMPLE 1 — Beam (substructure coupling):
-%     Two steel cantilevers (A fixed-left, B fixed-right) with Rayleigh damping.
-%     Optimal sensor/excitation DoFs are found per beam by an NDP exhaustive
-%     search (2 sensors + 3 excitations = 5 measured DoFs each); the resulting
-%     SEMM expansions are coupled at the interface and compared against the full
-%     coupled model. No plotting.
+%     Two steel cantilevers (A fixed-left, B fixed-right), Rayleigh damping.
+%     After the optimal search, the SEMM expansions are coupled at the interface
+%     and compared against the full coupled model (GCCM, Gamma).
 %
-%   EXAMPLE 2 — Square plate (no coupling):
-%     An Ansys Craig-Bampton reduced model is loaded, its FRFs built with the
-%     same Rayleigh damping, and the optimal sensors/excitations are found by an
-%     NDP exhaustive search over all valid DoFs. The placement is plotted.
+%   EXAMPLE 2 — Square plate (standalone, NO coupling):
+%     An Ansys Craig-Bampton reduced model; optimal sensor/excitation placement
+%     over all valid DoFs (pure optimal expansion), with the placement plotted.
 %
-%   Dependencies (utils/): create_cantilever_beam, damping, compute_frf,
-%     add_noise, frequency_generation, exhaustive_search, semm, func_coh,
-%     primal_coupling, couple_substructures, svd_truncation, load_hcb_model,
-%     plot_square_plate.
+%   Dependencies (utils/): create_cantilever_beam, load_hcb_model, damping,
+%     frequency_generation, compute_frf, add_noise, exhaustive_search,
+%     objective_function, mgo, semm, func_coh, svd_truncation, primal_coupling,
+%     couple_substructures, plot_square_plate.
 
 clear; clc; close all;
 
@@ -33,11 +34,15 @@ ray.alpha  = 1.0;              % mass-proportional coefficient
 ray.beta   = 1e-5;            % stiffness-proportional coefficient (≈0.4–2% over the bands used)
 
 num_sensors       = 1;        % NDP: 1 sensor ...
-extra_excitations = 0;        % ... + (1+0) = 1 excitation → 2 measured DoFs (small NDP, fast verification)
+extra_excitations = 0;        % ... + (1+0) = 1 excitation → 2 measured DoFs (small NDP, fast)
+
+mgo_agents   = 5;             % mgo population size
+mgo_max_iter = 50;            % mgo iterations
+mgo_seed     = 42;            % RNG seed (philox) for reproducible mgo runs
 
 
 %% ========================================================================
-%  EXAMPLE 1 — BEAM: optimal sensors + interface coupling
+%  EXAMPLE 1 — BEAM: optimal search (exhaustive + mgo) + interface coupling
 %  ========================================================================
 
 %% Beam properties (steel)
@@ -79,7 +84,7 @@ YEA = YEA(tdof, tdof, :);  YEB = YEB(tdof, tdof, :);
 YEA = add_noise(true, YEA, 0.005, 0.005, 1e-8, 1e-8, beam_noise_seed);
 YEB = add_noise(true, YEB, 0.005, 0.005, 1e-8, 1e-8, beam_noise_seed);
 
-%% Optimal sensor/excitation search (NDP, 2 sensors + 3 excitations)
+%% Exhaustive search (NDP) on each beam
 % Interface = inaccessible DoFs scored on; candidates exclude the interface.
 n = size(YA, 1);
 interface_a = (n - n_interface + 1):n;          % beam A interface: free (right) end
@@ -96,15 +101,33 @@ optB.candidate_dofs  = setdiff(1:n, interface_b);
 res_a = exhaustive_search(YA, YEA, optA);
 res_b = exhaustive_search(YB, YEB, optB);
 
-ys_a = res_a.ys;                                 % SEMM-expanded experimental FRF, beam A
-ys_b = res_b.ys;
+%% MGO search on beam A — identical NDP space, solved with mgo.m directly
+cand_a  = setdiff(1:n, interface_a);
+k_exc   = num_sensors + extra_excitations;
+r_combs = nchoosek(cand_a, num_sensors);
+n_outer = size(r_combs, 1);
+n_inner = nchoosek(numel(cand_a) - num_sensors, k_exc);
+e_combs = zeros(n_inner, k_exc, n_outer);
+for i = 1:n_outer
+    e_combs(:, :, i) = nchoosek(setdiff(cand_a, r_combs(i, :)), k_exc);
+end
 
-fprintf('\nBeam A: sensors %s | excitations %s | GCCM %.4f  (%d measured DoFs)\n', ...
-    mat2str(res_a.sensor_dofs), mat2str(res_a.excitation_dofs), res_a.cor_overall, ...
-    numel(res_a.sensor_dofs) + numel(res_a.excitation_dofs));
-fprintf('Beam B: sensors %s | excitations %s | GCCM %.4f  (%d measured DoFs)\n', ...
-    mat2str(res_b.sensor_dofs), mat2str(res_b.excitation_dofs), res_b.cor_overall, ...
-    numel(res_b.sensor_dofs) + numel(res_b.excitation_dofs));
+% Maximise GCCM -> minimise its negative (objective_function: semm + func_coh).
+fobj_a = @(x) -objective_function(x, wb, YA, YEA, r_combs, e_combs, ...
+    false, 0, false, interface_a, 'COH', 3, []);
+
+rng(mgo_seed, 'philox');
+[mgo_score_a, mgo_pos_a] = mgo(mgo_agents, mgo_max_iter, [1 1], [n_outer n_inner], 2, fobj_a);
+mgo_sensors_a     = r_combs(round(mgo_pos_a(1)), :);
+mgo_excitations_a = e_combs(round(mgo_pos_a(2)), :, round(mgo_pos_a(1)));
+
+%% Compare exhaustive vs mgo (beam A)
+fprintf('\n=== BEAM A: exhaustive vs MGO (same NDP space) ===\n');
+fprintf('  exhaustive: sensors %s exc %s GCCM %.6f\n', ...
+    mat2str(res_a.sensor_dofs), mat2str(res_a.excitation_dofs), res_a.cor_overall);
+fprintf('  MGO       : sensors %s exc %s GCCM %.6f\n', ...
+    mat2str(mgo_sensors_a), mat2str(mgo_excitations_a), -mgo_score_a);
+fprintf('  gap (exhaustive - MGO) = %.2e\n', res_a.cor_overall - (-mgo_score_a));
 
 %% Full coupled (reference) model — primal coupling of the experimental beams
 [~, k_full, m_full, c_full] = primal_coupling(n_interface, ...
@@ -112,19 +135,18 @@ fprintf('Beam B: sensors %s | excitations %s | GCCM %.4f  (%d measured DoFs)\n',
 y_full = compute_frf(wb, k_full, m_full, c_full, 'accelerance');
 y_full = y_full(1:2:length(k_full), 1:2:length(k_full), :);
 
-%% Optimally coupled SEMM model (transverse interface)
-ys_a_t   = svd_truncation(ys_a, 15);             % rank-reduce noisy SEMM before coupling
-ys_b_t   = svd_truncation(ys_b, 15);
+%% Optimally coupled SEMM model (transverse interface) + comparison vs full
+ys_a_t   = svd_truncation(res_a.ys, 15);         % rank-reduce noisy SEMM before coupling
+ys_b_t   = svd_truncation(res_b.ys, 15);
 y_couple = couple_substructures(ys_a_t, ys_b_t, n_interface, 'transverse');
 
-%% Compare coupled SEMM vs full model
 nf = min(size(y_couple, 3), size(y_full, 3));
 [~, ~, gamma_couple] = func_coh(y_couple(:, :, 1:nf), y_full(:, :, 1:nf));
 fprintf('\n[BEAM] coupled-SEMM vs full-model GCCM (Gamma) = %.6f\n', gamma_couple);
 
 
 %% ========================================================================
-%  EXAMPLE 2 — SQUARE PLATE: optimal sensors over all DoFs (no coupling)
+%  EXAMPLE 2 — SQUARE PLATE: standalone optimal placement (NO coupling)
 %  ========================================================================
 
 data_dir = fullfile(fileparts(mfilename('fullpath')), 'Data');
@@ -139,7 +161,7 @@ plate = load_hcb_model(paths, struct('dof_per_node', 3, 'measured_dof_index', 2)
 
 %% FRFs — Rayleigh damping; experimental via stiffness shift (model error)
 pf_start = 15;  pf_end = 40;  pf_step = 0.1;     % FRF band [Hz]
-shift_value     = 1.04;                          % experimental stiffness shift
+shift_value      = 1.04;                         % experimental stiffness shift
 plate_noise_seed = 10;
 
 [wp, wp_hz] = frequency_generation(pf_start, pf_end, pf_step);
@@ -157,9 +179,7 @@ mz  = plate.measured_dof_array;                  % transverse (measured) DoF per
 Yz  = Yp(mz, mz, :);
 YEz = YEp(mz, mz, :);
 
-%% Optimal sensor/excitation search (NDP, 2 sensors + 3 excitations, all DoFs)
-% NOTE: NDP(2,3) over all 36 DoFs is a large search (nchoosek(36,2)*nchoosek(34,3)
-%       ~ 3.8M SEMM evaluations) — runs under parfor; expect a long run.
+%% Exhaustive search (NDP) over all valid DoFs
 np = plate.n;
 optP = struct('num_sensors', num_sensors, 'search_type', 'NDP', ...
     'extra_excitations', extra_excitations, ...
@@ -167,8 +187,31 @@ optP = struct('num_sensors', num_sensors, 'search_type', 'NDP', ...
     'methods', 'COH', 'extrema', 'max', 'frequency_range', wp, 'verbose', true);
 res_p = exhaustive_search(Yz, YEz, optP);
 
-fprintf('\n[PLATE] sensors %s | excitations %s | GCCM %.4f\n', ...
-    mat2str(res_p.sensor_dofs), mat2str(res_p.excitation_dofs), res_p.cor_overall);
+%% MGO search on the plate — identical NDP space, solved with mgo.m directly
+k_exc_p   = num_sensors + extra_excitations;
+r_combs_p = nchoosek(1:np, num_sensors);
+n_outer_p = size(r_combs_p, 1);
+n_inner_p = nchoosek(np - num_sensors, k_exc_p);
+e_combs_p = zeros(n_inner_p, k_exc_p, n_outer_p);
+for i = 1:n_outer_p
+    e_combs_p(:, :, i) = nchoosek(setdiff(1:np, r_combs_p(i, :)), k_exc_p);
+end
 
-%% Plot the optimal sensors / excitations on the plate
+fobj_p = @(x) -objective_function(x, wp, Yz, YEz, r_combs_p, e_combs_p, ...
+    false, 0, false, 1:np, 'COH', 3, []);
+
+rng(mgo_seed, 'philox');
+[mgo_score_p, mgo_pos_p] = mgo(mgo_agents, mgo_max_iter, [1 1], [n_outer_p n_inner_p], 2, fobj_p);
+mgo_sensors_p     = r_combs_p(round(mgo_pos_p(1)), :);
+mgo_excitations_p = e_combs_p(round(mgo_pos_p(2)), :, round(mgo_pos_p(1)));
+
+%% Compare exhaustive vs mgo (plate)
+fprintf('\n=== SQUARE PLATE: exhaustive vs MGO (same NDP space) ===\n');
+fprintf('  exhaustive: sensors %s exc %s GCCM %.6f\n', ...
+    mat2str(res_p.sensor_dofs), mat2str(res_p.excitation_dofs), res_p.cor_overall);
+fprintf('  MGO       : sensors %s exc %s GCCM %.6f\n', ...
+    mat2str(mgo_sensors_p), mat2str(mgo_excitations_p), -mgo_score_p);
+fprintf('  gap (exhaustive - MGO) = %.2e\n', res_p.cor_overall - (-mgo_score_p));
+
+%% Plot the optimal sensors / excitations on the plate (exhaustive result)
 plot_square_plate(plate.NodeCoords, res_p.sensor_dofs, res_p.excitation_dofs);

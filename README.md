@@ -73,38 +73,47 @@ The search size is configurable at the top of `MAIN.m` (`num_sensors`, `extra_ex
 
 ```mermaid
 flowchart TD
-    MAIN([MAIN.m])
+    MAIN([MAIN.m]):::hdr
     MAIN --> E1
     MAIN --> E2
 
-    subgraph E1 [Example 1 · Beam coupling]
+    subgraph E1 [Example 1 · Beam — substructure coupling]
         direction TB
-        B1[create_cantilever_beam] --> B2[damping]
-        B2 --> B3[compute_frf]
-        B3 --> B4[add_noise]
-        B4 --> B5[exhaustive_search]
-        B5 --> B6[svd_truncation]
-        B6 --> B7[couple_substructures]
-        B8[primal_coupling] --> B9[compute_frf - full model]
-        B7 --> BG{{func_coh - GCCM}}
-        B9 --> BG
+        A1[create_cantilever_beam]:::model --> A2[damping - Rayleigh]:::model
+        A2 --> A3[compute_frf]:::frf
+        A3 --> A4[add_noise]:::frf
+        A4 --> A5[exhaustive_search]:::search
+        A4 --> A6[mgo + objective_function]:::search
+        A5 --> A7{{compare: exhaustive vs MGO}}:::cmp
+        A6 --> A7
+        A5 --> A8[svd_truncation]:::couple
+        A8 --> A9[couple_substructures]:::couple
+        A10[primal_coupling + compute_frf<br/>full model]:::model --> A11{{compare: coupled vs full · GCCM}}:::cmp
+        A9 --> A11
     end
 
-    subgraph E2 [Example 2 · Square plate]
+    subgraph E2 [Example 2 · Square plate — standalone OSP, no coupling]
         direction TB
-        P1[load_hcb_model] --> P2[damping]
-        P2 --> P3[compute_frf]
-        P3 --> P4[add_noise]
-        P4 --> P5[exhaustive_search]
-        P5 --> P6[plot_square_plate]
+        P1[load_hcb_model]:::model --> P2[damping - Rayleigh]:::model
+        P2 --> P3[compute_frf]:::frf
+        P3 --> P4[add_noise]:::frf
+        P4 --> P5[exhaustive_search]:::search
+        P4 --> P6[mgo + objective_function]:::search
+        P5 --> P7{{compare: exhaustive vs MGO}}:::cmp
+        P6 --> P7
+        P7 --> P8[plot_square_plate]:::plot
     end
 
-    B5 -. SEMM engine .-> CORE[[semm]]
-    P5 -. SEMM engine .-> CORE
-    CORE -. scored by .-> MET[[func_coh / func_lac]]
+    classDef hdr    fill:#00204d,stroke:#00204d,color:#ffffff;
+    classDef model  fill:#2c3e66,stroke:#1b2a4a,color:#ffffff;
+    classDef frf    fill:#575d6d,stroke:#444a59,color:#ffffff;
+    classDef search fill:#8a8978,stroke:#6f6e5f,color:#101006;
+    classDef couple fill:#a99d66,stroke:#8c8155,color:#101006;
+    classDef cmp    fill:#cab969,stroke:#ad9c52,color:#101006;
+    classDef plot   fill:#ffea46,stroke:#e6d23f,color:#101006;
 ```
 
-`exhaustive_search` is geometry-agnostic: it takes an `n x n x nFreq` FRF plus the candidate and validation DoF sets, so the same function drives both the beam and the plate (and any future structure).
+Both examples are end-to-end and run the **exhaustive** search (`exhaustive_search`) and the **MGO** search (`mgo` driving `objective_function`) on the identical NDP combination space, then compare them. `exhaustive_search` is geometry-agnostic — it takes an `n x n x nFreq` FRF plus the candidate and validation DoF sets — so the same setup drives the beam, the plate, and any future structure. The beam additionally couples its SEMM expansions and compares against the full model; the square plate is a standalone optimal-placement problem (no coupling).
 
 Plotting uses the **magma** and **cividis** colormaps from `utils/cmap_magma.m` and `utils/cmap_cividis.m`. They are self-contained and require no extra toolboxes.
 Note: the colormaps differ from the published article — changed purely out of preference. :)
