@@ -1,25 +1,25 @@
 function correlation_plot(CorMatrix, caption)
-% CORRELATION_PLOT  Annotated heatmap of an FRF correlation matrix.
+% correlation_plot  Annotated heatmap of an FRF correlation matrix.
 %
-%   CORRELATION_PLOT(CORMATRIX) shows a cividis heatmap of the input
+%   correlation_plot(CORMATRIX) shows a cividis heatmap of the input
 %   correlation matrix with min, max and mean annotations, defaulting the
-%   metric label to 'Coherence'.
+%   metric label to 'CCM'
 %
 %   CORRELATION_PLOT(CORMATRIX, CAPTION) overrides the metric label.
 %
 %   Inputs:
 %     CORMATRIX - (N×N double) Correlation matrix in [0, 1] (COH, LAC, ...).
 %     CAPTION   - (char) [optional] Metric name shown in the title.
-%                 Default: 'Coherence'.
+%                 Default: 'CCM'
 %
 %   Reference:
 %     Junaid et al. (2026). Journal of Sound and Vibration.
-%     DOI: 10.1016/j.jsv.2026.001458
+%     DOI: https://doi.org/10.1016/j.jsv.2026.119782
 %
 %   See also: func_coh, func_lac, cmap_cividis.
 
 if nargin < 2 || isempty(caption)
-    caption = 'Coherence';
+    caption = 'CCM';
 end
 
 %% Summary statistics
@@ -30,7 +30,7 @@ avgVal             = mean(CorMatrix, 'all');
 [maxRow, maxCol]   = ind2sub(size(CorMatrix), maxIdx);
 [minRow, minCol]   = ind2sub(size(CorMatrix), minIdx);
 
-%% Annotated heatmap
+%% Heatmap
 
 figure('Name', caption, 'Color', 'w');
 imagesc(CorMatrix, [0 1]);
@@ -43,7 +43,7 @@ axis equal tight;
 xlabel('Y_{i,j}');  ylabel('Y_{i,j}');
 title(sprintf('%s  —  \\Gamma = %.5f', caption, avgVal));
 
-%% Min / max annotations
+%% Annotations
 
 hold on;
 text(maxCol, maxRow, sprintf('Max: %.3f', maxVal), ...
