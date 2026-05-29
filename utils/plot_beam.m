@@ -1,5 +1,5 @@
 function plot_beam(n_interface, n_node, sensor_dofs, excitation_dofs, side)
-% PLOT_BEAM  Schematic of a cantilever beam with sensor / excitation markers.
+%  Schematic of a cantilever beam with sensor / excitation markers.
 %
 %   plot_beam(n_interface, n_node, sensor_dofs, excitation_dofs, side)
 %
@@ -9,10 +9,7 @@ function plot_beam(n_interface, n_node, sensor_dofs, excitation_dofs, side)
 %   excitation_dofs - excitation node indices in the free-node numbering
 %   side            - 'A' (fixed at left) | 'B' (fixed at right)
 %
-%   The beam is drawn as a single continuous line spanning the boundary node
-%   through every free node. Plain "beam node" markers are shown only on nodes
-%   that are not interface / sensor / excitation, so the special markers are
-%   never overplotted, and the fixed support uses its own distinct marker.
+
 
 side_char = upper(char(string(side)));
 side_char = side_char(1);
