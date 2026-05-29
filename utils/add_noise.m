@@ -20,8 +20,7 @@ function y_noisy = add_noise(status, y_clean, n1, n2, n3, n4, seed)
 %     Bregar et al., (2022). pyFBS: A Python package for Frequency Based Substructuring. Journal of Open Source Software, 7(69), 3399, https://doi.org/10.21105/joss.03399
 %
 %     Equation reproduced in the form used here:
-%       Junaid et al. (2026), Journal of Sound and Vibration, Eq. (17).
-%       DOI: 10.1016/j.jsv.2026.001458
+%       Junaid et al. (2026), Journal of Sound and Vibration, Eq. (17), https://doi.org/10.1016/j.jsv.2026.119782
 
 if ~status
     y_noisy = y_clean;
