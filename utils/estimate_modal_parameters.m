@@ -30,19 +30,10 @@ function [naturalFrequencies, modeShapes, CMIF] = estimate_modal_parameters(FRF,
 %     CMIF - (nFreq×min(n,n) double) Singular values of FRF(:,:,k) at each
 %            frequency, sorted descending.
 %
-%   Method:
-%     For each frequency k, SVD of FRF(:,:,k) yields singular values
-%     CMIF(k,:). Peaks of CMIF(:,1) (the leading singular value) identify
-%     resonances. Mode shapes are the first left singular vector at each
-%     peak; signs are flipped so the dominant entry has positive real part.
 %
 %   Example:
 %     % Force exactly 3 modes so MACs are 3×3
 %     [fn, Phi] = estimate_modal_parameters(YA, freq_Hz, 'NumModes', 3);
-%
-%   Reference:
-%     Junaid et al. (2026). Journal of Sound and Vibration.
-%     DOI: 10.1016/j.jsv.2026.001458
 %
 %   See also: calculate_mac, findpeaks, svd.
 
@@ -70,7 +61,7 @@ if minPeakDistance_idx > maxAllowed
     minPeakDistance_idx = maxAllowed;
 end
 
-%% CMIF — leading singular value of FRF at every frequency
+%% CMIF: leading singular value of FRF at every frequency
 
 [nSensors, nExcit, nFreq] = size(FRF);
 CMIF = zeros(nFreq, min(nSensors, nExcit));
@@ -79,15 +70,14 @@ for k = 1:nFreq
     CMIF(k, :)  = diag(S);
 end
 
-%% Peak picking — optional NumModes truncation
+%% Peak picking with optional NumModes truncation
 
 if isempty(numModesTarget)
     [~, peakIdx] = findpeaks(CMIF(:, 1), ...
                              'MinPeakProminence', prominenceThresh, ...
                              'MinPeakDistance',   minPeakDistance_idx);
 else
-    % Top-N by prominence so two FRFs yield matching mode counts; then
-    % re-sort by frequency for natural ascending order.
+
     [~, peakIdx] = findpeaks(CMIF(:, 1), ...
                              'MinPeakProminence', prominenceThresh, ...
                              'MinPeakDistance',   minPeakDistance_idx, ...
@@ -98,7 +88,7 @@ end
 
 naturalFrequencies = f(peakIdx);
 
-%% Mode shapes — first left singular vector at each peak, sign-aligned
+%% Mode shapes
 
 modeShapes = zeros(nSensors, length(peakIdx));
 for m = 1:length(peakIdx)
