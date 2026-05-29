@@ -1,5 +1,5 @@
 function [beam_num, beam_exp] = create_cantilever_beam(props, gamma, fixed_side)
-% CREATE_CANTILEVER_BEAM  FE model of a cantilever beam (numerical + experimental).
+% create_cantilever_beam  FE model of a cantilever beam (numerical + experimental).
 %
 %   [beam_num, beam_exp] = create_cantilever_beam(props, gamma, fixed_side)
 %
@@ -9,8 +9,6 @@ function [beam_num, beam_exp] = create_cantilever_beam(props, gamma, fixed_side)
 %
 %   Each returned struct carries: nnode, ndof, l, A, I, k, m, K, M, modes, freq.
 %
-%   Reference:
-%     Junaid et al. (2026), Journal of Sound and Vibration.
 
 nelm  = round(props.nelm);
 nnode = nelm + 1;
