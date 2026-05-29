@@ -1,5 +1,5 @@
 function plot_square_plate(node_coords, sensor_dofs, excitation_dofs, show_indices)
-% PLOT_SQUARE_PLATE  Plot sensor / excitation placement on the square plate.
+% Plot sensor / excitation placement on the square plate.
 %
 %   plot_square_plate(node_coords, sensor_dofs, excitation_dofs)
 %   plot_square_plate(node_coords, sensor_dofs, excitation_dofs, show_indices)
@@ -11,9 +11,6 @@ function plot_square_plate(node_coords, sensor_dofs, excitation_dofs, show_indic
 %     sensor_dofs     - measured-DoF indices chosen as sensors.
 %     excitation_dofs - measured-DoF indices chosen as excitations.
 %     show_indices    - (logical) [optional] annotate node numbers. Default true.
-%
-%   Adapted from the experimental plotSquarePlate.m; uses the project magma
-%   colormap and a clean two-marker legend (sensor / excitation).
 %
 %   See also: load_hcb_model, exhaustive_search, cmap_magma.
 
@@ -64,7 +61,7 @@ ylim(ax, [-0.75 0.75]);
 grid(ax, 'on'); ax.GridAlpha = 0.25;
 xlabel(ax, 'x (m)');
 ylabel(ax, 'z (m)');
-title(ax, 'Square plate — sensor & excitation placement');
+title(ax, 'Square plate - sensor & excitation placement');
 legend(ax, 'Location', 'bestoutside');
 
 end
