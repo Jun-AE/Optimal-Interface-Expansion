@@ -8,12 +8,15 @@ function y = compute_frf(omega, k, m, c, frf_type)
 %   frf_type - 'receptance' | 'mobility' | 'accelerance'
 %
 %   Returns y of size n x n x nFreq.
+%  Only direct dynamic-stiffness inversion is implemented for now. 
+%  Modal superposition method will be added to this function as an optional method (suitable for larger models).
 
 n       = size(k, 1);
 n_freq  = numel(omega);
 y       = complex(zeros(n, n, n_freq));
 I       = eye(n);
 
+% parfor can be switched to the serial for loop if parallel toolbox is not available.
 parfor j = 1:n_freq
     om_j     = omega(j);
     z_j      = k + (1i * om_j) * c - (om_j^2) * m;
