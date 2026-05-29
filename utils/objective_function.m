@@ -1,7 +1,7 @@
 function cor = objective_function(x, frequency_range, y_n, y_e, c, e, ...
                                   truncation, reduction, trust_func_flag, ...
                                   interface_dofs, method, dim, trust_func_val, gen_excit)
-% OBJECTIVE_FUNCTION  GCCM fitness for SEMM expansion with sensor/excitation selection.
+% objective_function  GCCM fitness for SEMM expansion with sensor/excitation selection.
 %
 %   cor = objective_function(x, frequency_range, y_n, y_e, c, e, ...
 %                            truncation, reduction, trust_func_flag, ...
@@ -13,10 +13,10 @@ function cor = objective_function(x, frequency_range, y_n, y_e, c, e, ...
 %             (or excitationCombs(j,:) when gen_excit is supplied).
 %
 %   Reference:
-%     Junaid et al. (2026), Journal of Sound and Vibration.
+%     Junaid et al. (2026), Journal of Sound and Vibration, https://doi.org/10.1016/j.jsv.2026.119782.
 
 if nargin < 14, gen_excit = []; end
-x = round(x);
+x = round(x); % ensures integers
 
 if trust_func_flag
     tf.freq_Hz   = trust_func_val;
