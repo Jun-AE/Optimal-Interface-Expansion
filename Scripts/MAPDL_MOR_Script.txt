@@ -39,34 +39,21 @@ seopt,Super_EL,2,2 !Super_EL is selected, K and M are generated. Only load vecto
 cmsopt,free,cms_modes,,,FNUM,6 ! Fixed interface method/Hurty/Craig-Bampton Method is used
 
 
+cmsel,s,Master_Nodes ! Nodes present in Master_Nodes (Named Selection) are used as master nodes
 
-
-
-cmsel,s,MasterNodes_ ! Nodes present in Master_Nodes (Named Selection) are used as master nodes
-
-M,all,all ! Define Master Nodes, "all" indicates all DoFs. UX, UY and UZ can be used as well.
-
-
+M,all,all ! Define Master Nodes, "all" indicates all DoFs. UX, UY and UZ can be used as well but may not solve for free-free condition.
 
 !MLIST
 
-NLIST,MasterNodes_ ! Print the Nodes in MN_xmm 
-
-
+NLIST,Master_Nodes ! Print the Nodes in MN_xmm 
 
 allsel ! Select the entire model
-
-
 
 SOLVE
 
 FINISH
 
-
-
 ! Begin-Phase
-
-
 
 FINISH
 
@@ -76,15 +63,9 @@ num_mode = 1000
 
 /filname,Super_EL_ROM,1
 
-
-
 !Pre-processor Phase--------------
 
-
-
 /PREP7
-
-
 
 ! Element Type
 
@@ -94,20 +75,14 @@ et,1,matrix50
 
 EMATWRITE,yes
 
-
-
 ! Reduced Model Name
 
 type,1
 
 se,Super_EL
 
-
 FINISH
-
-
 /SOLU
-
 nummode = 1000
 
 ANTYPE,modal
@@ -120,42 +95,25 @@ BCSOPTION,,INCORE
 
 SOLVE
 
-
 ! Auxiliary-Phase----------------
 
 /OUTPUT,MAT_HCB,txt
 
-
 /AUX2
 
-
 /HEADER,defa
-
 /format,defa
-
-
 ! Reduced Order Matrices [K] and [M]
-
 
 file,Super_EL_ROM,full  
 
-
-
 HBMAT,MredHB,txt,,ascii,MASS,yes,yes
-
-
 HBMAT,KredHB,txt,,ascii,STIFF,yes,yes
-
 *SMAT, Kred, D, import, full, Super_EL_ROM.full, STIFF
-
 *SMAT, Mred, D, import, full, Super_EL_ROM.full, MASS
-
 *EXPORT, Kred,mmf,Kred_Sparse
-
 *EXPORT, Mred,mmf,Mred_Sparse
-
 *SMAT,NodToSolv,D,IMPORT,FULL,Super_EL_ROM.full,NOD2SOLV_ROM
-
 *PRINT,NodToSolv,N2D.txt
 
 FINISH
