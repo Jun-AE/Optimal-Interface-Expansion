@@ -1,7 +1,7 @@
 function FRF_TSVD = svd_truncation(FRF, num_drop)
-% SVD_TRUNCATION  Page-wise TSVD: discard trailing singular values per frequency.
+% svd_truncation  Page-wise TSVD: discard trailing singular values per frequency.
 %
-%   FRF_TSVD = SVD_TRUNCATION(FRF, NUM_DROP)
+%   FRF_TSVD = svd_truncation(FRF, NUM_DROP)
 %
 %   For each frequency page of FRF, computes an SVD and reconstructs using only
 %   the leading (size(s,1) - NUM_DROP) singular values. Equivalently, NUM_DROP
@@ -10,17 +10,12 @@ function FRF_TSVD = svd_truncation(FRF, num_drop)
 %   Inputs:
 %     FRF      - (n x m x nFreq) complex FRF array
 %     NUM_DROP - (non-negative integer) number of singular values to DROP from
-%                each page (not the number to keep). Example: NUM_DROP = 15
+%                each page. Example: NUM_DROP = 15
 %                removes the 15 smallest singular values when the page is
 %                square with at least 15 singular values.
 %
 %   Output:
 %     FRF_TSVD - same size as FRF, rank-reduced reconstruction
-%
-%   pyFBS alignment:
-%     pyFBS rank reduction removes low-energy (typically trailing) singular
-%     values before reconstruction — same intent as NUM_DROP here. See pyFBS
-%     (Bregar et al., JOSS 2022, doi:10.21105/joss.03399).
 %
 %   See also: semm, pagesvd.
 
