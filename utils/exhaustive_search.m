@@ -58,7 +58,7 @@ function out = exhaustive_search(y_n, y_e, opts)
 %       share the SAME DoF indexing and the SAME frequency axis. y_n is the
 %       numerical/clean model; y_e is the (noisy) experimental target.
 %     * All DoF references are integer indices into 1:n. candidate_dofs and
-%       validation_dofs are arbitrary subsets of 1:n and are INDEPENDENT — they
+%       validation_dofs are arbitrary subsets of 1:n and are INDEPENDENT  they
 %       may overlap fully (whole-field search) or be disjoint (interface search):
 %         - candidate_dofs  : where sensors/excitations may be placed.
 %         - validation_dofs : the interface / inaccessible DoFs the expansion is
@@ -66,7 +66,7 @@ function out = exhaustive_search(y_n, y_e, opts)
 %     * GEOMETRY IS THE CALLER'S JOB. Any structure-specific DoF preparation
 %       (extracting a Z-axis subset, node->DoF mapping, dropping CMS/fixed DoFs,
 %       slicing to translational DoFs, etc.) must be done BEFORE calling. This
-%       function never sees coordinates or connectivity — only the FRF tensors
+%       function never sees coordinates or connectivity  only the FRF tensors
 %       and the two index sets. That is what makes it geometry-agnostic.
 %     * frequency_range is the rad/s axis matching dim 3; it is passed to semm
 %       and is REQUIRED only when trust_func is true (otherwise may be []).
@@ -74,7 +74,7 @@ function out = exhaustive_search(y_n, y_e, opts)
 %       leave >= num_sensors+extra_excitations DoFs after the sensors; for Both
 %       numel(candidate_dofs) >= num_sensors+extra_excitations.
 %
-%   Examples (one per geometry — only the two index sets change):
+%   Examples (one per geometry  only the two index sets change):
 %     % Beam (interface = last n_iface translational DoFs):
 %     o.num_sensors=2; o.search_type='DP'; o.frequency_range=fr;
 %     o.validation_dofs=(n-n_iface+1):n; o.candidate_dofs=setdiff(1:n,o.validation_dofs);
@@ -174,7 +174,7 @@ if verbose
             upper(search_type), n_outer, n_inner, n_outer * n_inner, n_methods);
 end
 
-%% Search — semm once per combination, scored on every metric
+%% Search semm once per combination, scored on every metric
 
 cor_all = zeros(n_outer, n_inner, n_methods);   % (outer x inner x method)
 
