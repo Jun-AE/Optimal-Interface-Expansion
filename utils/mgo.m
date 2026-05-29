@@ -4,8 +4,7 @@ function [best_f, best_x, cnvg, stats] = mgo(n, max_iter, lb_arg, ub_arg, dim, f
 %   Baseline implementation with dedup + cache accelerations on by default.
 %   For deterministic integer-bounded objectives (the project's GCCM search),
 %   repeated candidates are evaluated once: duplicates within an iteration are
-%   collapsed and results are memoised across iterations. The RNG sequence is
-%   identical to the plain batched MGO, so optima are unchanged.
+%   collapsed and results are memoised across iterations.
 %
 %   [best_f, best_x, cnvg, stats] = mgo(n, max_iter, lb, ub, dim, fobj)
 %   [best_f, best_x, cnvg, stats] = mgo(..., plot_flag, save_vid, solution_space, opts)
@@ -18,7 +17,7 @@ function [best_f, best_x, cnvg, stats] = mgo(n, max_iter, lb_arg, ub_arg, dim, f
 %     fobj           - objective handle, fobj(x) returns scalar to minimise
 %     plot_flag      - show live 2D progress plot (default false)
 %     save_vid       - write progress animation to mgo_progress.mp4 (default false)
-%     solution_space - precomputed fitness landscape for the contour overlay
+%     solution_space - precomputed fitness landscape for the contour overlay (calculated from exhaustive search)
 %     opts (struct, all optional):
 %       .use_dedup   - unique candidates per iteration (default true)
 %       .use_cache   - cache fobj by rounded x (default true)
@@ -32,7 +31,6 @@ function [best_f, best_x, cnvg, stats] = mgo(n, max_iter, lb_arg, ub_arg, dim, f
 %
 %   Reference:
 %     Abdollahzadeh et al. (2022). Mountain gazelle optimizer.
-%     Advances in Engineering Software 174, 103282.
 
 if nargin < 7 || isempty(plot_flag), plot_flag = false; end
 if nargin < 8 || isempty(save_vid),  save_vid  = false; end
@@ -236,7 +234,7 @@ persistent fig ax1 ax2 h_gaz h_best h_conv vid mcmap
 if length(lb) ~= 2, return; end
 
 if isempty(fig) || ~isvalid(fig)
-    fig = figure('Name', 'mgo progress', 'Color', 'w', 'Position', [100 100 1200 500]);
+    fig = figure('Name', 'MGO progress', 'Color', 'w', 'Position', [100 100 1200 500]);
     tlo = tiledlayout(fig, 1, 2, 'Padding', 'compact', 'TileSpacing', 'compact');
     mcmap = local_magma(5);
 
@@ -267,7 +265,7 @@ if isempty(fig) || ~isvalid(fig)
     xlim(ax2, [1, max_iter]);
 
     if save_vid
-        vid           = VideoWriter('mgo_progress.mp4', 'MPEG-4');
+        vid           = VideoWriter('MGO_progress.mp4', 'MPEG-4');
         vid.FrameRate = 15; vid.Quality   = 100;
         open(vid);
     end
@@ -283,7 +281,7 @@ else
     end
 end
 
-sgtitle(sprintf('mgo   iter %d/%d   best = %.6g', iter, max_iter, cnvg(iter)), ...
+sgtitle(sprintf('MGO   iter %d/%d   best = %.6g', iter, max_iter, cnvg(iter)), ...
     'FontWeight', 'bold');
 drawnow limitrate;
 
