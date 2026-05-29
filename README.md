@@ -22,36 +22,49 @@ The repository implements the **beam case study (Case 1)** end-to-end (for now).
    ```
 3. Run the main driver:
    ```matlab
-   beam_coh_main
+   MAIN
    ```
-The script builds two cantilever beams, generates clean and noisy FRFs, runs SEMM expansion, performs exhaustive and MGO-based sensor/excitation search, and compares the two.
+`MAIN.m` holds two self-contained, clearly separated examples:
+- **Example 1 — Beam (coupled):** builds two steel cantilevers with Rayleigh damping, generates clean/noisy FRFs, finds optimal sensors/excitations per beam by NDP exhaustive search (2 sensors + 3 excitations), couples the SEMM expansions at the interface, and compares against the full coupled model.
+- **Example 2 — Square plate (no coupling):** loads an Ansys Craig-Bampton reduced model (`Data/`), builds FRFs, finds optimal sensors/excitations over all DoFs, and plots the placement.
+
+For **profiling / fast validation** (plots off by default, fixed RNG seeds, section timings, optional beam / square-plate validation blocks), use:
+   ```matlab
+   BEAM_MAIN_TEST
+   ```
+See `PLAN.md` for the optimisation roadmap.
 
 ---
+
+## Repository layout
+
+```
+MAIN.m            two worked examples (beam coupling + square plate)
+BEAM_MAIN_TEST.m  profiling / validation harness
+utils/            FEM, SEMM, search, FRF, plotting functions
+Data/             Ansys HCB reduced-model files for the square plate
+Scripts/          Ansys MAPDL model-reduction script
+```
 
 ## Pipeline
 
 ```
-beam_coh_main.m
+MAIN.m
     │
-    ├── create_cantilever_beam     FEM model, eigen-solve
-    ├── damping                    modal | proportional damping
-    ├── primal_coupling            substructure assembly (K, M, C)
+    ├── create_cantilever_beam     beam FEM model, eigen-solve
+    ├── load_hcb_model             Ansys Craig-Bampton reduced model loader
+    ├── damping                    modal | proportional (Rayleigh) damping
     ├── frequency_generation       rad/s + Hz frequency axes
     ├── compute_frf                receptance | mobility | accelerance
-    ├── nnoise                     pyFBS additive noise (paper Eq. 17)
-    ├── plot_modal_waterfall       imag(FRF) waterfall + mode overlays
-    ├── func_coh / func_lac        correlation metrics
-    ├── correlation_plot           annotated heatmap
-    ├── analyze_frf_energy         energy-based DoF selection
-    ├── estimate_modal_parameters  CMIF + peak picking
-    ├── calculate_mac              MAC matrix with annotated heatmap
-    ├── visualize_mode_shapes      animated mode shapes (optional video)
-    ├── bruteforce_search_beam     exhaustive sensor/excitation search via semm
+    ├── add_noise                  pyFBS additive noise (paper Eq. 17)
+    ├── func_coh / func_lac        correlation metrics (COH, LAC)
+    ├── exhaustive_search          generic DP/NDP sensor/excitation search via semm
     ├── semm                       System Equivalent Model Mixing (paper Eq. 12)
-    ├── couple_substructures       dual LM-FBS coupling (transverse or full)
     ├── svd_truncation             rank reduction for noisy SEMM
-    ├── mgo                        Mountain Gazelle Optimizer
-    └── objective_function         GCCM fitness for MGO
+    ├── primal_coupling            substructure assembly (K, M, C)
+    ├── couple_substructures       dual LM-FBS coupling (transverse or full)
+    ├── plot_square_plate          plate sensor/excitation placement
+    └── mgo                        Mountain Gazelle Optimizer (metaheuristic search)
 ```
 
 Plotting uses the **magma** and **cividis** colormaps from `utils/cmap_magma.m` and `utils/cmap_cividis.m`. They are self-contained and require no native toolboxes.

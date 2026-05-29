@@ -73,6 +73,9 @@ function [L, K_AB, M_AB, C_AB] = primal_coupling(ninterface, KA, KB, MA, MB, CA,
 % Assumes 2 DoFs/node (Euler-Bernoulli beam); change here for other elements.
 nInterfaceDoFs = 2 * ninterface;
 
+validate_interface_dofs(ninterface, size(KA, 1), size(KB, 1), ...
+    'Layout', 'full', 'Caller', 'primal_coupling');
+
 % Substructure sizes and total uncoupled DoF count.
 nA      = size(KA, 1);
 nB      = size(KB, 1);

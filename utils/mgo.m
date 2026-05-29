@@ -1,8 +1,14 @@
-function [best_f, best_x, cnvg] = mgo(n, max_iter, lb_arg, ub_arg, dim, fobj, plot_flag, save_vid, solution_space)
-% mgo  Mountain Gazelle Optimizer (integer-bounded, vectorised batch form).
+function [best_f, best_x, cnvg, stats] = mgo(n, max_iter, lb_arg, ub_arg, dim, fobj, plot_flag, save_vid, solution_space, opts)
+% MGO  Mountain Gazelle Optimizer (integer-bounded, vectorised batch form).
 %
-%   [best_f, best_x, cnvg] = mgo(n, max_iter, lb, ub, dim, fobj)
-%   [best_f, best_x, cnvg] = mgo(..., plot_flag, save_vid, solution_space)
+%   Baseline implementation with dedup + cache accelerations on by default.
+%   For deterministic integer-bounded objectives (the project's GCCM search),
+%   repeated candidates are evaluated once: duplicates within an iteration are
+%   collapsed and results are memoised across iterations. The RNG sequence is
+%   identical to the plain batched MGO, so optima are unchanged.
+%
+%   [best_f, best_x, cnvg, stats] = mgo(n, max_iter, lb, ub, dim, fobj)
+%   [best_f, best_x, cnvg, stats] = mgo(..., plot_flag, save_vid, solution_space, opts)
 %
 %   Inputs:
 %     n              - population size
@@ -13,37 +19,59 @@ function [best_f, best_x, cnvg] = mgo(n, max_iter, lb_arg, ub_arg, dim, fobj, pl
 %     plot_flag      - show live 2D progress plot (default false)
 %     save_vid       - write progress animation to mgo_progress.mp4 (default false)
 %     solution_space - precomputed fitness landscape for the contour overlay
+%     opts (struct, all optional):
+%       .use_dedup   - unique candidates per iteration (default true)
+%       .use_cache   - cache fobj by rounded x (default true)
+%       .use_parfor  - parfor for fobj batches (default false)
+%
+%   Outputs:
+%     best_f - best objective value found
+%     best_x - best position (1 x dim)
+%     cnvg   - 1 x max_iter best-so-far convergence trace
+%     stats  - struct: n_fobj_eval, n_cache_hit, n_dedup_saved
 %
 %   Reference:
 %     Abdollahzadeh et al. (2022). Mountain gazelle optimizer.
 %     Advances in Engineering Software 174, 103282.
 
-if nargin < 7, plot_flag = false; end
-if nargin < 8, save_vid  = false; end
+if nargin < 7 || isempty(plot_flag), plot_flag = false; end
+if nargin < 8 || isempty(save_vid),  save_vid  = false; end
 if nargin < 9, solution_space = []; end
+if nargin < 10 || isempty(opts), opts = struct(); end
 if save_vid, plot_flag = true; end
+
+use_dedup  = get_opt(opts, 'use_dedup',  true);
+use_cache  = get_opt(opts, 'use_cache',  true);
+use_parfor = get_opt(opts, 'use_parfor', false);
+
+if use_parfor && isempty(gcp('nocreate'))
+    use_parfor = false;
+end
 
 if isscalar(lb_arg), lb = repmat(lb_arg, 1, dim); else, lb = lb_arg(:).'; end
 if isscalar(ub_arg), ub = repmat(ub_arg, 1, dim); else, ub = ub_arg(:).'; end
+span = ub - lb;
+
+stats = struct('n_fobj_eval', 0, 'n_cache_hit', 0, 'n_dedup_saved', 0);
+cache = containers.Map('KeyType', 'char', 'ValueType', 'double');
 
 %% Init
 
-x    = round(rand(n, dim) .* (ub - lb) + lb);
-cost = zeros(n, 1);
-for i = 1:n
-    cost(i) = fobj(x(i, :));
-end
+x    = round(rand(n, dim) .* span + lb);
+[cost, stats] = evaluate_rows(x, fobj, cache, use_cache, use_parfor, stats);
+
 [best_f, idx] = min(cost);
 best_x = x(idx, :);
 cnvg   = zeros(1, max_iter);
 
-%% Main loop — fully batched per iteration
+sub_n   = ceil(n / 3);
+pool_sz = 4 * n;
+cand    = zeros(pool_sz, dim);
 
-sub_n = ceil(n / 3);
+%% Main loop
 
 for iter = 1:max_iter
 
-    % Mature gazelle vector per herd member.
     m_all = zeros(n, dim);
     for i = 1:n
         sub = randperm(n, sub_n);
@@ -51,7 +79,8 @@ for iter = 1:max_iter
                     + mean(x(sub, :), 1)      * ceil(rand * 2);
     end
 
-    a_vec = randn(n, dim) .* exp(2 - 2 * iter / max_iter);
+    decay = exp(2 - 2 * iter / max_iter);
+    a_vec = randn(n, dim) .* decay;
     d_vec = (abs(x) + abs(best_x)) .* (2 * rand - 1);
 
     a2 = -1 - iter / max_iter;
@@ -73,17 +102,18 @@ for iter = 1:max_iter
     f5 = randi(2, n, dim);  f6 = randi(2, n, dim);
     partner_mh = randi(n, n, 1);
 
-    c_msf = lb + (ub - lb) .* rand(n, dim);
+    c_msf = lb + span .* rand(n, dim);
     c_tsm = best_x - abs((f1 .* m_all - f2 .* x) .* a_vec) .* cofi_tsm;
     c_mh  = (m_all + cofi_mh_a) + (f3 .* best_x - f4 .* x(partner_mh, :)) .* cofi_mh_b;
     c_bmh = (x - d_vec) + (f5 .* best_x - f6 .* m_all) .* cofi_bmh;
 
-    cand = round(max(min([c_msf; c_tsm; c_mh; c_bmh], ub), lb));
+    cand(1:n, :)       = c_msf;
+    cand(n+1:2*n, :)   = c_tsm;
+    cand(2*n+1:3*n, :) = c_mh;
+    cand(3*n+1:4*n, :) = c_bmh;
+    cand(:)            = round(max(min(cand, ub), lb));
 
-    new_cost = zeros(4 * n, 1);
-    for i = 1:4 * n
-        new_cost(i) = fobj(cand(i, :));
-    end
+    [new_cost, stats] = evaluate_rows(cand, fobj, cache, use_cache, use_parfor, stats, use_dedup);
 
     [all_cost, order] = sort([cost; new_cost]);
     all_x = [x; cand];
@@ -98,7 +128,7 @@ for iter = 1:max_iter
 
     if mod(iter, 10) == 0
         fprintf('MGO  iter %4d/%d   best = %.6g   x* = %s\n', ...
-                iter, max_iter, best_f, mat2str(best_x));
+            iter, max_iter, best_f, mat2str(best_x));
     end
 
     if plot_flag
@@ -108,11 +138,95 @@ end
 
 end
 
+%% -------------------------------------------------------------------------
+function v = get_opt(opts, name, default)
+if isfield(opts, name) && ~isempty(opts.(name))
+    v = opts.(name);
+else
+    v = default;
+end
+end
+
+
+function [costs, stats] = evaluate_rows(rows, fobj, cache, use_cache, use_parfor, stats, use_dedup)
+if nargin < 7, use_dedup = false; end
+
+n_rows = size(rows, 1);
+if use_dedup
+    [u_rows, ~, ic] = unique(rows, 'rows', 'stable');
+    stats.n_dedup_saved = stats.n_dedup_saved + (n_rows - size(u_rows, 1));
+else
+    u_rows = rows;
+    ic = (1:n_rows).';
+end
+
+[u_cost, stats] = evaluate_unique(u_rows, fobj, cache, use_cache, use_parfor, stats);
+costs = u_cost(ic);
+end
+
+
+function [u_cost, stats] = evaluate_unique(u_rows, fobj, cache, use_cache, use_parfor, stats)
+n_unique = size(u_rows, 1);
+u_cost   = nan(n_unique, 1);
+todo     = true(n_unique, 1);
+
+if use_cache
+    for k = 1:n_unique
+        key = cache_key(u_rows(k, :));
+        if isKey(cache, key)
+            u_cost(k) = cache(key);
+            todo(k)   = false;
+            stats.n_cache_hit = stats.n_cache_hit + 1;
+        end
+    end
+end
+
+idx_eval = find(todo);
+n_eval   = numel(idx_eval);
+
+if n_eval == 0
+    return;
+end
+
+if use_parfor
+    chunk = nan(n_eval, 1);
+    parfor j = 1:n_eval
+        chunk(j) = fobj(u_rows(idx_eval(j), :));
+    end
+    for j = 1:n_eval
+        k = idx_eval(j);
+        u_cost(k) = chunk(j);
+        if use_cache
+            cache(cache_key(u_rows(k, :))) = u_cost(k);
+        end
+    end
+else
+    for j = 1:n_eval
+        k = idx_eval(j);
+        u_cost(k) = fobj(u_rows(k, :));
+        if use_cache
+            cache(cache_key(u_rows(k, :))) = u_cost(k);
+        end
+    end
+end
+
+stats.n_fobj_eval = stats.n_fobj_eval + n_eval;
+end
+
+
+function key = cache_key(x)
+x = round(x(:)).';
+key = sprintf('%d,', x);
+end
+
 
 function out = pick_layer(stack, picks)
-[n, dim, ~] = size(stack);
-[ii, jj]    = ndgrid(1:n, 1:dim);
-out         = stack(sub2ind(size(stack), ii, jj, repmat(picks, 1, dim)));
+n   = size(stack, 1);
+dim = size(stack, 2);
+out = zeros(n, dim);
+for k = 1:n
+    out(k, :) = stack(k, :, picks(k));
+end
 end
 
 
@@ -136,9 +250,9 @@ if isempty(fig) || ~isvalid(fig)
         cb = colorbar(ax1); cb.Label.String = 'Fitness';
     end
     h_gaz  = scatter(ax1, x(:, 1), x(:, 2), 70, mcmap(2, :), '^', 'filled', ...
-                     'MarkerEdgeColor', 'k', 'DisplayName', 'Herd');
+        'MarkerEdgeColor', 'k', 'DisplayName', 'Herd');
     h_best = scatter(ax1, best_x(1), best_x(2), 280, mcmap(4, :), 'p', 'filled', ...
-                     'MarkerEdgeColor', 'k', 'DisplayName', 'Best');
+        'MarkerEdgeColor', 'k', 'DisplayName', 'Best');
     xlabel(ax1, 'x_1'); ylabel(ax1, 'x_2');
     title(ax1, 'Search-space exploration');
     legend(ax1, [h_gaz, h_best], 'Location', 'best');
@@ -154,7 +268,7 @@ if isempty(fig) || ~isvalid(fig)
 
     if save_vid
         vid           = VideoWriter('mgo_progress.mp4', 'MPEG-4');
-        vid.FrameRate = 15; vid.Quality = 100;
+        vid.FrameRate = 15; vid.Quality   = 100;
         open(vid);
     end
 else
@@ -170,39 +284,28 @@ else
 end
 
 sgtitle(sprintf('mgo   iter %d/%d   best = %.6g', iter, max_iter, cnvg(iter)), ...
-        'FontWeight', 'bold');
+    'FontWeight', 'bold');
 drawnow limitrate;
 
 if ~isempty(vid)
     writeVideo(vid, getframe(fig));
     if iter == max_iter, close(vid); vid = []; end
 end
-
 end
 
 
 function m = local_cividis(n)
-ctrl = [0.000 0.135 0.305 ;
-        0.082 0.249 0.452 ;
-        0.346 0.408 0.450 ;
-        0.555 0.560 0.451 ;
-        0.793 0.717 0.354 ;
-        1.000 0.948 0.038];
+ctrl = [0.000 0.135 0.305 ; 0.082 0.249 0.452 ; 0.346 0.408 0.450 ;
+        0.555 0.560 0.451 ; 0.793 0.717 0.354 ; 1.000 0.948 0.038];
 m = interp_cmap(ctrl, n);
 end
 
-
 function m = local_magma(n)
-ctrl = [0.001 0.000 0.014 ;
-        0.207 0.072 0.388 ;
-        0.448 0.088 0.453 ;
-        0.685 0.114 0.443 ;
-        0.881 0.207 0.367 ;
-        0.990 0.380 0.359 ;
+ctrl = [0.001 0.000 0.014 ; 0.207 0.072 0.388 ; 0.448 0.088 0.453 ;
+        0.685 0.114 0.443 ; 0.881 0.207 0.367 ; 0.990 0.380 0.359 ;
         0.987 0.991 0.750];
 m = interp_cmap(ctrl, n);
 end
-
 
 function m = interp_cmap(ctrl, n)
 t_in  = linspace(0, 1, size(ctrl, 1));

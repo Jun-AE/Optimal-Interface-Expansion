@@ -34,6 +34,14 @@ n_int   = n_interface_nodes * dof_per_node;
 n_b     = size(y_b, 1);
 n_total = n_a + n_b;
 
+if dof_per_node == 2
+    layoutTag = 'full';
+else
+    layoutTag = 'translational';
+end
+validate_interface_dofs(n_interface_nodes, n_a, n_b, ...
+    'Layout', layoutTag, 'Caller', 'couple_substructures');
+
 % Boolean compatibility: A's last n_int DoFs == B's first n_int DoFs.
 b_mat = zeros(n_int, n_total);
 b_mat(:, (n_a - n_int + 1):n_a)     = -eye(n_int);

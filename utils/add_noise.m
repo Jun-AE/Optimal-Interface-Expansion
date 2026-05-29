@@ -1,8 +1,8 @@
-function y_noisy = nnoise(status, y_clean, n1, n2, n3, n4, seed)
-% NNOISE  Four-component pyFBS additive noise model (paper Eq. 17).
+function y_noisy = add_noise(status, y_clean, n1, n2, n3, n4, seed)
+% ADD_NOISE  Four-component pyFBS additive noise model (paper Eq. 17).
 %
-%   y_noisy = nnoise(status, y_clean, n1, n2, n3, n4)
-%   y_noisy = nnoise(status, y_clean, n1, n2, n3, n4, seed)
+%   y_noisy = add_noise(status, y_clean, n1, n2, n3, n4)
+%   y_noisy = add_noise(status, y_clean, n1, n2, n3, n4, seed)
 %
 %   Adds independent Gaussian noise to a clean FRF:
 %

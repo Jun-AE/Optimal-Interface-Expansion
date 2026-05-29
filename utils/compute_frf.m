@@ -12,11 +12,12 @@ function y = compute_frf(omega, k, m, c, frf_type)
 n       = size(k, 1);
 n_freq  = numel(omega);
 y       = complex(zeros(n, n, n_freq));
+I       = eye(n);
 
 parfor j = 1:n_freq
     om_j     = omega(j);
     z_j      = k + (1i * om_j) * c - (om_j^2) * m;
-    y(:,:,j) = z_j \ eye(n);
+    y(:,:,j) = z_j \ I;
 end
 
 switch lower(frf_type)

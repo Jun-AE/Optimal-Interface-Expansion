@@ -10,7 +10,7 @@ function y_semm = semm(r, e, y_n, y_e, frequency_range, truncation_flag, reducti
 %     y_n, y_e           - numerical and experimental FRFs (n x n x nFreq)
 %     frequency_range    - rad/s axis (only used if trust_func_flag is true)
 %     truncation_flag    - apply SVD truncation before pinv (default false)
-%     reduction_num      - kept singular values when truncation_flag is true
+%     reduction_num      - singular values to DROP per page (svd_truncation) when truncation_flag is true
 %     trust_func_flag    - apply sigmoid blend along frequency (default false)
 %     trust_func_params  - struct with .freq_Hz and .steepness
 %

@@ -15,7 +15,7 @@ function out = bruteforce_search_beam(interface_dofs, num_sensors, y_n, y_e, opt
 %                         'NDP' (excitations from the DoFs minus sensors, with extra count opts.ec) |
 %                         'Both' (excitations from all DoFs, may overlap sensors)
 %       .truncation       SVD truncation flag for semm
-%       .reduction        kept singular values when truncation is on
+%       .reduction        singular values to DROP (svd_truncation) when truncation is on
 %       .ec               extra excitation count (NDP only)
 %       .trust_func       sigmoid trust function flag for semm
 %       .trust_func_val   trust function parameter
