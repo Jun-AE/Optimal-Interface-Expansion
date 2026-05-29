@@ -1,5 +1,5 @@
 function plot_frf(frequency_range_Hz, response_array, excitation_array, FRF_1, FRF_2, str_1, str_2, varargin)
-% PLOT_FRF  Magnitude / phase / coherence comparison plot for 2-4 FRFs at one (r, e) pair.
+%  Magnitude / phase / coherence comparison plot for 2-4 FRFs at one (r, e) pair.
 %
 %   PLOT_FRF(F_HZ, R, E, FRF_1, FRF_2, STR_1, STR_2)
 %   PLOT_FRF(..., FRF_3, STR_3)
@@ -19,7 +19,7 @@ function plot_frf(frequency_range_Hz, response_array, excitation_array, FRF_1, F
 %
 %   Reference:
 %     Junaid et al. (2026). Journal of Sound and Vibration.
-%     DOI: 10.1016/j.jsv.2026.001458
+%     https://doi.org/10.1016/j.jsv.2026.119782
 %
 %   See also: func_coh, func_lac, cmap_magma, compute_frf.
 
