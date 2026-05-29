@@ -8,7 +8,8 @@ function y_couple = couple_substructures(y_a, y_b, n_interface_nodes, coupling_m
 %   n_interface_nodes - number of shared interface nodes
 %   coupling_mode     - 'transverse' (1 DoF / node, z only) or
 %                       'both'       (2 DoFs / node, z + rotation).
-%                       Default 'both'.
+%                       Default 'transverse'.
+%   Can be modified for 3 DoFs as well.
 %
 %   Algorithm (paper §2.2, Eq. 10–11):
 %       Y_block = blkdiag(y_a, y_b)
@@ -17,10 +18,8 @@ function y_couple = couple_substructures(y_a, y_b, n_interface_nodes, coupling_m
 %
 %   Assumes A's trailing interface DoFs match B's leading interface DoFs.
 %
-%   Reference:
-%     Junaid et al. (2026), Journal of Sound and Vibration.
 
-if nargin < 4 || isempty(coupling_mode), coupling_mode = 'both'; end
+if nargin < 4 || isempty(coupling_mode), coupling_mode = 'transverse'; end
 
 switch lower(coupling_mode)
     case {'transverse', 'z'}
