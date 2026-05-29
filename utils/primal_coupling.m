@@ -1,5 +1,5 @@
 function [L, K_AB, M_AB, C_AB] = primal_coupling(ninterface, KA, KB, MA, MB, CA, CB)
-% PRIMAL_COUPLING  Primally couple two substructures across a shared interface.
+% Primally couple two substructures across a shared interface.
 %
 %   [L, K_AB, M_AB, C_AB] = PRIMAL_COUPLING(NINTERFACE, KA, KB, MA, MB, CA, CB)
 %   couples substructures A and B by enforcing compatibility at NINTERFACE
@@ -10,10 +10,6 @@ function [L, K_AB, M_AB, C_AB] = primal_coupling(ninterface, KA, KB, MA, MB, CA,
 %       K_AB = L' * blkdiag(KA, KB) * L
 %       M_AB = L' * blkdiag(MA, MB) * L
 %       C_AB = L' * blkdiag(CA, CB) * L
-%
-%   This is the explicit primal projection from LM-FBS (paper §2.2, Eqs. 6-7).
-%   L is built directly rather than via NULL(B); the construction below is
-%   equivalent to L = null(B) for the layout described in the contract.
 %
 %   Inputs:
 %     NINTERFACE - (integer, scalar) Number of shared interface NODES (not
@@ -42,15 +38,12 @@ function [L, K_AB, M_AB, C_AB] = primal_coupling(ninterface, KA, KB, MA, MB, CA,
 %       i.e. A's first interface DoF (lowest index inside its interface
 %       band) is identified with B's first interface DoF, A's second with
 %       B's second, and so on. This requires the caller to number A's and
-%       B's interface DoFs in the same ordinal order — the natural case
-%       when both substructures number their nodes from one end to the
-%       other along the coupling direction.
+%       B's interface DoFs in the same ordinal order.
 %
 %   Element-type assumption:
 %     The 2*NINTERFACE conversion assumes 2 DoFs per node (transverse
 %     displacement + rotation), as in the project's Euler-Bernoulli beam
-%     model. For shell or 3D elements, pass the equivalent node count or
-%     adapt this function.
+%     model.
 %
 %   Example:
 %     % Couple two cantilever beams sharing 3 interface nodes (= 6 DoFs):
@@ -58,12 +51,6 @@ function [L, K_AB, M_AB, C_AB] = primal_coupling(ninterface, KA, KB, MA, MB, CA,
 %         beamA_exp.K, beamB_exp.K, ...
 %         beamA_exp.M, beamB_exp.M, ...
 %         beamA_exp.C, beamB_exp.C);
-%
-%   Reference:
-%     Junaid et al. (2026). Journal of Sound and Vibration. §2.2 (LM-FBS).
-%     DOI: 10.1016/j.jsv.2026.001458
-%     de Klerk, D., Rixen, D.J., & Voormeeren, S.N. (2008). General framework
-%       for dynamic substructuring. AIAA Journal 46(5): 1169-1181.
 %
 %   See also: couple_substructures, blkdiag, eig.
 
@@ -101,8 +88,6 @@ L = [L1; L2];
 K_combined = blkdiag(KA, KB);
 M_combined = blkdiag(MA, MB);
 C_combined = blkdiag(CA, CB);
-
-%% Primal projection: u = L*q  =>  L'*K*L
 
 K_AB = L' * K_combined * L;
 M_AB = L' * M_combined * L;
