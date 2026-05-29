@@ -1,18 +1,18 @@
-% MAIN  Optimal interface expansion — worked examples.
+% MAIN  Optimal interface expansion  worked examples.
 %
 %   Two self-contained, end-to-end examples for the methodology in:
 %     Junaid et al. (2026). Journal of Sound and Vibration. DOI: 10.1016/j.jsv.2026.119782
 %
 %   Each example: build the model -> FRFs (+ noise) -> find the optimal
 %   sensor/excitation DoFs by BOTH exhaustive search and the Mountain Gazelle
-%   Optimizer (mgo) on the same NDP space -> compare the two searches.
+%   Optimizer (MGO) on the same NDP space -> compare the two searches.
 %
-%   EXAMPLE 1 — Beam (substructure coupling):
+%   EXAMPLE 1  Beam (substructure coupling):
 %     Two steel cantilevers (A fixed-left, B fixed-right), Rayleigh damping.
 %     After the optimal search, the SEMM expansions are coupled at the interface
 %     and compared against the full coupled model (GCCM, Gamma).
 %
-%   EXAMPLE 2 — Square plate (standalone, NO coupling):
+%   EXAMPLE 2  Square plate (standalone, NO coupling):
 %     An Ansys Craig-Bampton reduced model; optimal sensor/excitation placement
 %     over all valid DoFs (pure optimal expansion), with the placement plotted.
 %
@@ -36,13 +36,13 @@ ray.beta   = 1e-5;            % stiffness-proportional coefficient (≈0.4–2% 
 num_sensors       = 1;        % NDP: 1 sensor ...
 extra_excitations = 0;        % ... + (1+0) = 1 excitation → 2 measured DoFs (small NDP, fast)
 
-mgo_agents   = 5;             % mgo population size
-mgo_max_iter = 50;            % mgo iterations
-mgo_seed     = 42;            % RNG seed (philox) for reproducible mgo runs
+mgo_agents   = 5;             % MGO population size
+mgo_max_iter = 150;            % MGO iterations
+mgo_seed     = 12;            % RNG seed (philox) for reproducible mgo runs
 
 
 %% ========================================================================
-%  EXAMPLE 1 — BEAM: optimal search (exhaustive + mgo) + interface coupling
+%  EXAMPLE 1  BEAM: optimal search (exhaustive + mgo) + interface coupling
 %  ========================================================================
 
 %% Beam properties (steel)
@@ -101,7 +101,7 @@ optB.candidate_dofs  = setdiff(1:n, interface_b);
 res_a = exhaustive_search(YA, YEA, optA);
 res_b = exhaustive_search(YB, YEB, optB);
 
-%% MGO search on beam A — identical NDP space, solved with mgo.m directly
+%% MGO search on beam A  identical NDP space, solved with mgo.m directly
 cand_a  = setdiff(1:n, interface_a);
 k_exc   = num_sensors + extra_excitations;
 r_combs = nchoosek(cand_a, num_sensors);
@@ -129,15 +129,15 @@ fprintf('  MGO       : sensors %s exc %s GCCM %.6f\n', ...
     mat2str(mgo_sensors_a), mat2str(mgo_excitations_a), -mgo_score_a);
 fprintf('  gap (exhaustive - MGO) = %.2e\n', res_a.cor_overall - (-mgo_score_a));
 
-%% Full coupled (reference) model — primal coupling of the experimental beams
+%% Full coupled (reference) model  primal coupling of the experimental beams
 [~, k_full, m_full, c_full] = primal_coupling(n_interface, ...
     beam_a_exp.K, beam_b_exp.K, beam_a_exp.M, beam_b_exp.M, beam_a_exp.C, beam_b_exp.C);
 y_full = compute_frf(wb, k_full, m_full, c_full, 'accelerance');
 y_full = y_full(1:2:length(k_full), 1:2:length(k_full), :);
 
 %% Optimally coupled SEMM model (transverse interface) + comparison vs full
-ys_a_t   = svd_truncation(res_a.ys, 15);         % rank-reduce noisy SEMM before coupling
-ys_b_t   = svd_truncation(res_b.ys, 15);
+ys_a_t   = svd_truncation(res_a.ys, 1);         % rank-reduce noisy SEMM before coupling
+ys_b_t   = svd_truncation(res_b.ys, 1);
 y_couple = couple_substructures(ys_a_t, ys_b_t, n_interface, 'transverse');
 
 nf = min(size(y_couple, 3), size(y_full, 3));
@@ -146,10 +146,10 @@ fprintf('\n[BEAM] coupled-SEMM vs full-model GCCM (Gamma) = %.6f\n', gamma_coupl
 
 
 %% ========================================================================
-%  EXAMPLE 2 — SQUARE PLATE: standalone optimal placement (NO coupling)
+%  EXAMPLE 2  SQUARE PLATE: standalone optimal placement (NO coupling)
 %  ========================================================================
 
-data_dir = fullfile(fileparts(mfilename('fullpath')), 'Data');
+data_dir = fullfile(fileparts(mfilename('.\Data')), 'Data');
 
 %% Load Ansys Craig-Bampton reduced model
 paths = struct( ...
@@ -159,7 +159,7 @@ paths = struct( ...
     'M',       fullfile(data_dir, 'MredHB.txt'));
 plate = load_hcb_model(paths, struct('dof_per_node', 3, 'measured_dof_index', 2));
 
-%% FRFs — Rayleigh damping; experimental via stiffness shift (model error)
+%% FRFs  Rayleigh damping; experimental via stiffness shift (model error)
 pf_start = 15;  pf_end = 40;  pf_step = 0.1;     % FRF band [Hz]
 shift_value      = 1.04;                         % experimental stiffness shift
 plate_noise_seed = 10;
@@ -187,7 +187,7 @@ optP = struct('num_sensors', num_sensors, 'search_type', 'NDP', ...
     'methods', 'COH', 'extrema', 'max', 'frequency_range', wp, 'verbose', true);
 res_p = exhaustive_search(Yz, YEz, optP);
 
-%% MGO search on the plate — identical NDP space, solved with mgo.m directly
+%% MGO search on the plate  identical NDP space, solved with mgo.m directly
 k_exc_p   = num_sensors + extra_excitations;
 r_combs_p = nchoosek(1:np, num_sensors);
 n_outer_p = size(r_combs_p, 1);
