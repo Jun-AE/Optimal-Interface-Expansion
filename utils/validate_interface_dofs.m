@@ -1,5 +1,5 @@
 function validate_interface_dofs(n_interface_nodes, n_a, n_b, varargin)
-% VALIDATE_INTERFACE_DOFS  Assert LM-FBS interface DoF layout contract.
+% validate_interface_dofs Assert LM-FBS interface DoF layout contract.
 %
 %   validate_interface_dofs(N_INTERFACE_NODES, N_A, N_B)
 %   validate_interface_dofs(..., 'Layout', 'full' | 'translational', ...)
@@ -17,7 +17,6 @@ function validate_interface_dofs(n_interface_nodes, n_a, n_b, varargin)
 %     'InterfaceDofsB'    - user-defined interface index vector for beam B
 %     'Caller'            - string included in error messages (default '')
 %
-%   Reference: primal_coupling.m, couple_substructures.m, PLAN.md E2.
 
 p = inputParser;
 addParameter(p, 'Layout', 'full', @(s) any(strcmpi(s, {'full', 'translational'})));
@@ -53,7 +52,7 @@ if ~isempty(p.Results.InterfaceDofsA)
     ia = p.Results.InterfaceDofsA(:).';
     if ~isequal(ia, expected_a)
         error('validate_interface_dofs:InterfaceA', ...
-            '%sBeam A interface DoFs [%s] do not match expected [%s].', ...
+            '%sSubstructure A interface DoFs [%s] do not match expected [%s].', ...
             prefix, mat2str(ia), mat2str(expected_a));
     end
 end
@@ -62,7 +61,7 @@ if ~isempty(p.Results.InterfaceDofsB)
     ib = p.Results.InterfaceDofsB(:).';
     if ~isequal(ib, expected_b)
         error('validate_interface_dofs:InterfaceB', ...
-            '%sBeam B interface DoFs [%s] do not match expected [%s].', ...
+            '%sSubstructure B interface DoFs [%s] do not match expected [%s].', ...
             prefix, mat2str(ib), mat2str(expected_b));
     end
 end
