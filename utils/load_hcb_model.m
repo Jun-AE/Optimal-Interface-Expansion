@@ -1,5 +1,5 @@
 function model = load_hcb_model(paths, opts)
-% LOAD_HCB_MODEL  Load and assemble an Ansys Craig-Bampton (HCB) reduced model.
+% load_hcb_model Load and assemble Ansys Mechanical generated Hurty/Craig-Bampton (HCB) reduced model.
 %
 %   model = load_hcb_model(paths, opts)
 %
@@ -48,10 +48,6 @@ function model = load_hcb_model(paths, opts)
 %     Ye = add_noise(true, Ye, 1e-3, 1e-3, 1e-3, 1e-3, 10);
 %     Yz  = Yn(m.measured_dof_array, m.measured_dof_array, :);
 %     YEz = Ye(m.measured_dof_array, m.measured_dof_array, :);
-%
-%   Reference:
-%     Junaid et al. (2026). Journal of Sound and Vibration. DOI: 10.1016/j.jsv.2026.119782
-%     HB reader after the assembled-symmetric (RSA) Harwell-Boeing convention.
 %
 %   See also: exhaustive_search, compute_frf, damping, add_noise, frequency_generation.
 
