@@ -1,5 +1,5 @@
 function c = damping(k, m, cfg)
-% DAMPING  Build a damping matrix using the selected formulation.
+%  Build a damping matrix using the selected formulation.
 %
 %   c = damping(k, m, cfg)
 %
@@ -8,7 +8,7 @@ function c = damping(k, m, cfg)
 %   cfg.alpha   - mass-proportional coefficient (Rayleigh case)
 %   cfg.beta    - stiffness-proportional coefficient (Rayleigh case)
 %
-%   Reference:
+%   Augmented Modal Damping reference:
 %     Craig & Kurdila (2006), Fundamentals of Structural Dynamics, §10.3.
 
 switch lower(cfg.type)
@@ -19,7 +19,6 @@ switch lower(cfg.type)
 end
 
 end
-
 
 function c = augmented_modal_damping(k, m, damp_ratios)
 
