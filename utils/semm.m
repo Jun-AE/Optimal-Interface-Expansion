@@ -14,8 +14,8 @@ function y_semm = semm(r, e, y_n, y_e, frequency_range, truncation_flag, reducti
 %     trust_func_flag    - apply sigmoid blend along frequency (default false)
 %     trust_func_params  - struct with .freq_Hz and .steepness
 %
-%   Reference:
-%     Junaid et al. (2026), Journal of Sound and Vibration. DOI 10.1016/j.jsv.2026.001458
+%   "No-loop" implementation reference:
+%     Junaid et al. (2026), Journal of Sound and Vibration, https://doi.org/10.1016/j.jsv.2026.119782
 
 if nargin < 5 || isempty(frequency_range),   frequency_range   = [];    end
 if nargin < 6 || isempty(truncation_flag),   truncation_flag   = false; end
@@ -23,8 +23,7 @@ if nargin < 7 || isempty(reduction_num),     reduction_num     = 0;     end
 if nargin < 8 || isempty(trust_func_flag),   trust_func_flag   = false; end
 if nargin < 9 || isempty(trust_func_params), trust_func_params = [];    end
 
-r = round(r);
-e = round(e);
+r = round(r); e = round(e); % only integers
 
 y_e_re = y_e(r, e, :);
 y_n_re = y_n(r, e, :);
@@ -41,7 +40,7 @@ end
 proj_l   = pagemtimes(y_n, pagepinv(y_n_rn));
 delta_re = y_n_re - y_e_re;
 proj_r   = pagemtimes(pagepinv(y_n_ne), y_n);
-y_r      = pagemtimes(pagemtimes(proj_l, delta_re), proj_r);
+y_t      = pagemtimes(pagemtimes(proj_l, delta_re), proj_r);
 
 switch trust_func_flag
     case true
@@ -49,9 +48,9 @@ switch trust_func_flag
         f_c = trust_func_params.freq_Hz;
         k   = trust_func_params.steepness / f_c;
         w   = 1 ./ (1 + exp(-k .* (frequency_hz - f_c)));
-        y_r = y_r .* reshape(w, 1, 1, []);
+        y_t = y_t .* reshape(w, 1, 1, []);
 end
 
-y_semm = y_n - y_r;
+y_semm = y_n - y_t;
 
 end
