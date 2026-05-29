@@ -1,26 +1,9 @@
 function map = cmap_cividis(N)
 % CMAP_CIVIDIS  Perceptually-uniform, CVD-safe cividis colormap.
 %
-%   MAP = CMAP_CIVIDIS(N) returns an N×3 RGB colormap closely approximating
-%   the cividis colormap — a perceptually-uniform sequential map designed
-%   to remain readable under colour-vision deficiency, running from dark
-%   blue through neutral grey to bright yellow.
+%   cmap_cividis(N) returns an N×3 RGB colormap
 %
 %   CMAP_CIVIDIS with no argument returns a 256×3 map.
-%
-%   Implementation: shape-preserving (pchip) interpolation through 9 RGB
-%   control points sampled from the cividis table. Output is clamped to
-%   [0, 1]. Visually indistinguishable from the original at typical
-%   figure resolutions.
-%
-%   Example:
-%     colormap(cmap_cividis);        % use as default 256-step colormap
-%     C = cmap_cividis(7);           % seven discrete cividis colours
-%
-%   Reference:
-%     Nuñez, Anderton & Renslow (2018). Optimizing colormaps with consideration
-%     for color vision deficiency. PLoS ONE 13(7): e0199239.
-%     Public-domain RGB table; reimplemented here as a compact approximation.
 %
 %   See also: cmap_magma, colormap, interp1.
 
