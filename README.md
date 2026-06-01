@@ -16,7 +16,7 @@ Two case studies are implemented: a **two-beam substructure coupling** problem a
 ## Quick start
 
 1. Open MATLAB R2025b (also tested on R2024b).
-2. From this folder, run the driver:
+2. From this folder, run the main.m file:
    ```matlab
    MAIN
    ```
