@@ -86,7 +86,7 @@ Note: the colormaps differ from the published article. They were changed purely 
 
 ## Status
 
-This is a reference implementation for others to explore, extend, or improve. It is not configured to reproduce the exact numerical results of the paper. In case of any bugs or issues, please let me know.:)
+This is a reference implementation for others to explore, extend, or improve. It is not configured to reproduce the exact numerical results of the paper. It is intended to be a generic and simple demonstraton of the methodology with examples. In case of any bugs or issues, please let me know.:)
 
 ---
 
