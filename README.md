@@ -35,19 +35,19 @@ The search size is configurable at the top of `MAIN.m` (`num_sensors`, `extra_ex
 
 ```
 .
-├── MAIN.m                         run this — two worked examples
+├── MAIN.m                         Main file containing two examples
 ├── README.md
 ├── LICENSE
-├── Data/                          Ansys Craig-Bampton (HCB) reduced-model files
-│   ├── Nodes_36.txt               master-node coordinates (contains 36 nodes)
-│   ├── KredHB.mapping             matrix-equation / node / DOF map
-│   ├── KredHB.txt                 reduced stiffness (Harwell-Boeing)
-│   └── MredHB.txt                 reduced mass (Harwell-Boeing)
+├── Data/                          Ansys Mechanical Craig-Bampton (HCB) reduced-model files
+│   ├── Nodes_36.txt               master-node IDs and coordinates (contains 36 nodes)
+│   ├── KredHB.mapping             matrix-equation / node / DOF mapping
+│   ├── KredHB.txt                 reduced stiffness (Harwell-Boeing format)
+│   └── MredHB.txt                 reduced mass (Harwell-Boeing format)
 ├── Scripts/
 │   └── MAPDL_MOR_Script.txt       Ansys MAPDL model-reduction script
 └── utils/
     ├── create_cantilever_beam.m   beam FE model + eigen-solve
-    ├── load_hcb_model.m           Ansys HCB reduced-model loader
+    ├── load_hcb_model.m           Converts Ansys exported HB format to .mat
     ├── damping.m                  Augmented Modal Damping & proportional (Rayleigh) damping
     ├── frequency_generation.m     rad/s + Hz frequency axes
     ├── compute_frf.m              receptance | mobility | accelerance
@@ -69,7 +69,7 @@ The search size is configurable at the top of `MAIN.m` (`num_sensors`, `extra_ex
 
 ---
 
-Both examples are end-to-end and run the **exhaustive** search (`exhaustive_search`) and the **MGO** search (`mgo` driving `objective_function`) on the identical NDP combination space, then compare them. `exhaustive_search` is geometry-agnostic — it takes an `n x n x nFreq` FRF plus the candidate and validation DoF sets, so the same setup drives the beam, the plate, and any future structure. The beam additionally couples its SEMM expansions and compares against the full model; the square plate is a standalone optimal-placement problem (no coupling).
+Both examples are end-to-end and run the **exhaustive** search (`exhaustive_search`) and the **MGO** search (`mgo` driving `objective_function`) on the identical NDP combination space, then compare them. `exhaustive_search` is geometry-agnostic, it takes an `n x n x nFreq` FRF plus the candidate and validation DoF sets, so the same setup drives the beam, the plate, and any future structure. The beam additionally couples its SEMM expansions and compares against the full model; the square plate is a standalone optimal-placement problem (no coupling).
 
 Plotting uses the **magma** and **cividis** colormaps from `utils/cmap_magma.m` and `utils/cmap_cividis.m`. They are self-contained and require no extra toolboxes.
 Note: the colormaps differ from the published article. They were changed purely out of preference. :)
@@ -86,7 +86,7 @@ Note: the colormaps differ from the published article. They were changed purely 
 
 ## Status
 
-This is a reference implementation for others to explore, extend, or improve. It is not configured to reproduce the exact numerical results of the paper.
+This is a reference implementation for others to explore, extend, or improve. It is not configured to reproduce the exact numerical results of the paper. In case of any bugs or issues, please let me know.:)
 
 ---
 
