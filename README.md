@@ -7,7 +7,7 @@ Reference implementation/software supplement for the paper:
 > Journal of Sound and Vibration 635 (2026) 119782.
 > [DOI](https://doi.org/10.1016/j.jsv.2026.119782)
 
-The methodology combines **System Equivalent Model Mixing (SEMM)** for FRF expansion with an **Optimal Sensor Placement (OSP)** framework driven by the **Global Coherence Correlation Metric (GCCM, Γ)**. Optimisation is performed by exhaustive search where feasible and by the **Mountain Gazelle Optimizer (MGO)** for larger spaces.
+The methodology combines **System Equivalent Model Mixing (SEMM)** for FRF expansion with an **Optimal Sensor Placement (OSP)** framework driven by the **Global Coherence Correlation Metric (GCCM, Γ)**. Optimisation is performed by exhaustive search where feasible and by the **Mountain Gazelle Optimizer (MGO)** for higher dimensionality.
 
 Two case studies are implemented: a **two-beam substructure coupling** problem and an **HCB reduced square plate**. The HB files for the square plate, its nodes list are provided in Data. Additionally an MOR script for Ansys Mechanical is provided in Scripts that can be applied to any other structure of interest.
 
@@ -34,7 +34,6 @@ The search size is configurable at the top of `MAIN.m` (`num_sensors`, `extra_ex
 ## Repository structure
 
 ```
-.
 ├── MAIN.m                         Main file containing two examples
 ├── README.md
 ├── LICENSE
@@ -69,12 +68,12 @@ The search size is configurable at the top of `MAIN.m` (`num_sensors`, `extra_ex
 
 ---
 
-Both examples are end-to-end and run the **exhaustive** search (`exhaustive_search`) and the **MGO** search (`mgo` driving `objective_function`) on the identical NDP combination space, then compare them. `exhaustive_search` is geometry-agnostic, it takes an `n x n x nFreq` FRF plus the candidate and validation DoF sets, so the same setup drives the beam, the plate, and any future structure. The beam additionally couples its SEMM expansions and compares against the full model; the square plate is a standalone optimal-placement problem (no coupling).
+Both examples are end-to-end and run the **exhaustive** search (`exhaustive_search`) and the **MGO** search (`mgo` driving `objective_function`) on the identical NDP combination space, then compare them. `exhaustive_search` is geometry-agnostic, it takes an `n x n x nFreq` FRF plus the candidate and validation DoF sets, so the same setup drives the beam (case a), the square plate (case b), and any future structure. The beam additionally couples its SEMM expansions and compares against the full model; the square plate is a standalone optimal-placement problem (no coupling).
 
 Plotting uses the **magma** and **cividis** colormaps from `utils/cmap_magma.m` and `utils/cmap_cividis.m`. They are self-contained and require no extra toolboxes.
-Note: the colormaps differ from the published article. They were changed purely out of preference. :)
+Note: the colormaps differ from the published article. They were changed purely out of personal preference. :)
 
-PERMAS4EDU based educational example is available at [PERMAS4EDU](https://github.com/permas4edu/permas4edu/tree/main/ema/examples/017,https://github.com/permas4edu/permas4edu/tree/main/ema/examples/020)
+**PERMAS4EDU** based educational example is available at [PERMAS4EDU_LPlate_v1](https://github.com/permas4edu/permas4edu/tree/main/ema/examples/017), [PERMAS4EDU_LPlate_v2](https://github.com/permas4edu/permas4edu/tree/main/ema/examples/020), thanks to Dr. Nils Wagner, Dr. Muhammad Umer and [PERMAS4EDU](https://github.com/permas4edu).
 
 ---
 
@@ -88,7 +87,7 @@ PERMAS4EDU based educational example is available at [PERMAS4EDU](https://github
 
 ## Status
 
-This is a reference implementation for others to explore, extend, or improve. It is not configured to reproduce the exact numerical results of the paper. It is intended to be a generic and simple demonstraton of the methodology with examples. In case of any bugs or issues, please let me know.:)
+This is a reference implementation for others to explore, extend, or improve. This implementation is presented as a general demonstration of the methodology rather than a reproduction of the exact numerical results presented in the paper. In case of any bugs or issues, please let me know. :)
 
 ---
 
