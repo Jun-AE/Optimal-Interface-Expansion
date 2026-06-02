@@ -74,6 +74,8 @@ Both examples are end-to-end and run the **exhaustive** search (`exhaustive_sear
 Plotting uses the **magma** and **cividis** colormaps from `utils/cmap_magma.m` and `utils/cmap_cividis.m`. They are self-contained and require no extra toolboxes.
 Note: the colormaps differ from the published article. They were changed purely out of preference. :)
 
+PERMAS4EDU based educational example is available at [PERMAS4EDU](https://github.com/permas4edu/permas4edu/tree/main/ema/examples/017,https://github.com/permas4edu/permas4edu/tree/main/ema/examples/020)
+
 ---
 
 ## Requirements
